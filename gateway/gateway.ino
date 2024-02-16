@@ -13,6 +13,7 @@
 #define DIO0 26
 
 #define BUFFER_SIZE 255 //Maximum number of bytes per packet
+#define NET_ID 0x53AC //ID that all emmiters must use to communicate with gateway
 
 int LoRaConfig(int sck, int miso, int mosi, int ss, int rst, int dio0, int freq, int sf, int bw);
 int LoRaReading(byte* values_str, int* values_pos);
@@ -124,6 +125,7 @@ void setup() {
   LoRa.onReceive(onReceive);
   LoRa.receive();
   delay(1000);
+  Serial.println("Listening");
 }
 
 void loop() {
@@ -135,33 +137,31 @@ void loop() {
     printStr(values, num_values);
     Serial.println();
     Serial.println(num_values);
-    
+   
     if(num_values == 3)
     {
-      if(values[0] == 69 and values[1] == 0)
+      
+      old_value = new_value;
+      new_value = values[2];
+
+      if (((old_value + 1) % 32) != new_value)
       {
-        old_value = new_value;
-        new_value = values[2];
-
-        if (((old_value + 1) % 32) != new_value)
-        {
-          discontinuity++;
-        }
-
-        if(uploadValue("received_value", new_value))
-        {
-          upload_error++;
-        }
-        if(new_value == 31)
-        {
-          (void)EmailSend(&config, &smtp, &message, "esp32 sender", RECIPIENT_EMAIL, "20240214_1 test", "31 has been reached again");
-        }
+        discontinuity++;
       }
-      else Serial.println("Bad identifiers");
+
+      if(uploadValue("received_value", new_value))
+      {
+        upload_error++;
+      }
+      if(new_value == 31)
+      {
+        (void)EmailSend(&config, &smtp, &message, "esp32 sender", RECIPIENT_EMAIL, "20240214_1 test", "31 has been reached again");
+      }
+      
     }
     else
     {
-      Serial.println("Not 3 values received");
+      Serial.println("More than 3 bytes received");
     }
     num_values = 0;
   }
@@ -207,8 +207,21 @@ int LoRaReading(byte* values_str)
 //ISR when receiving LoRa signals
 void onReceive(int packetSize)
 {
-  num_values = packetSize;
-  for (int w = 0; w < packetSize; w++) values[w] = LoRa.read();
+  int w = 0;
+  //Checks if the packet is long enough for an ID to fit
+  if(packetSize > 2)
+  {
+    //Reads the ID values and compares to the established ID
+    for(w = 0;w<2;w++) values[w] = LoRa.read();
+    if(values[0] == (((NET_ID & 0xFF00) >> 8)) and (values[1] == (NET_ID & 0x00FF)))
+    {
+      //Continues if ID is correct
+      if(packetSize > BUFFER_SIZE) num_values = BUFFER_SIZE;
+      else num_values = packetSize;
+      
+      for(w = 2; w < num_values; w++) values[w] = LoRa.read();
+    }
+  }
 }
 
 void printStr(byte* str, int len)
