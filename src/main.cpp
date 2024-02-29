@@ -11,9 +11,9 @@ RTC_DATA_ATTR uint8 new_value = 31;
 RTC_DATA_ATTR uint8 old_value = 0;
 
 RTC_DATA_ATTR uint16 ack_fails = 0;
-RTC_DATA_ATTR uint16 not_four_bytes = 0;
-RTC_DATA_ATTR uint16 missed_value = 0;
-RTC_DATA_ATTR uint16 repeated_value = 0;
+RTC_DATA_ATTR uint16 not_five_bytes = 0;
+RTC_DATA_ATTR uint16 missed_data = 0;
+RTC_DATA_ATTR uint16 duplicated_data = 0;
 
 void setup() {
 
@@ -54,41 +54,45 @@ void setup() {
 void loop(){
   if(in_packet_len)
   {
-    if(replyAck())
+    if(in_packet_len == GATEWAY_ID_LEN + 3U)
     {
-      Serial.println("Failed to reply with acknowledgement");
-      ack_fails++;
+      if(replyAck())
+      {
+        Serial.println("Failed to reply with acknowledgement");
+        ack_fails++;
+      }
+
+      if(isDataDuplicated())
+      {
+        Serial.println("Received data was duplicated");
+        duplicated_data++;
+      }
+      else
+      {
+        old_value = new_value;
+        new_value = in_packet[GATEWAY_ID_LEN + 2U];
+        
+        if (((old_value + 1) % 32) != new_value)
+        {
+          missed_data++;
+        }
+
+        //(void)uploadValue("received_value", new_value);
+      }
     }
+    else
+    {
+      Serial.println("Not 5 bytes received");
+      not_five_bytes++;
+    }
+
     Serial.print("Received string: ");
     printStr((uint8*)in_packet, in_packet_len);
     Serial.println();
     Serial.print("With length: ");
     Serial.println(in_packet_len);
-   
-    if(in_packet_len == 4)
-    {
-      old_value = new_value;
-      new_value = in_packet[3];
-
-      if (((old_value + 1) % 32) != new_value)
-      {
-        missed_value++;
-      }
-
-      if(old_value == new_value)
-      {
-        repeated_value++;
-        //(void)EmailSend("20240227_1 test", "An email is sent because a repeated value has been received.");
-      }
-      
-    }
-    else
-    {
-      Serial.println("More than 4 bytes received");
-      not_four_bytes++;
-    }
     Serial.println();
-    //(void)uploadValue("received_value", new_value);
+
     in_packet_len = 0;
   }
 }
