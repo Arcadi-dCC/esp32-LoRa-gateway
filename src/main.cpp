@@ -15,8 +15,6 @@ RTC_DATA_ATTR uint16 not_five_bytes = 0;
 RTC_DATA_ATTR uint16 missed_data = 0;
 RTC_DATA_ATTR uint16 duplicated_data = 0;
 
-RTC_DATA_ATTR uint8 previous_did = 0xFF;
-
 void setup() {
 
   Serial.begin(115200);
@@ -56,7 +54,7 @@ void setup() {
 void loop(){
   if(in_packet_len)
   {
-    if(in_packet_len == 5)
+    if(in_packet_len == GATEWAY_ID_LEN + 3U)
     {
       if(replyAck())
       {
@@ -64,24 +62,22 @@ void loop(){
         ack_fails++;
       }
 
-      if(in_packet[3] != previous_did)
+      if(isDataDuplicated())
+      {
+        Serial.println("Received data was duplicated");
+        duplicated_data++;
+      }
+      else
       {
         old_value = new_value;
-        new_value = in_packet[4];
-
+        new_value = in_packet[GATEWAY_ID_LEN + 2U];
+        
         if (((old_value + 1) % 32) != new_value)
         {
           missed_data++;
         }
 
-        previous_did = in_packet[3];
-
         //(void)uploadValue("received_value", new_value);
-      }
-      else
-      {
-        Serial.println("Received data was duplicated");
-        duplicated_data++;
       }
     }
     else

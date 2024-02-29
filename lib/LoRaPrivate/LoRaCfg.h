@@ -15,10 +15,10 @@
 //#define SYNC_WORD 0x00            //Syncronization byte
 //#define PREAM_LEN 8               //Signal preamble length
 
-#define IN_BUFFER_SIZE      255     //Maximum number of bytes per input packet
+#define IN_BUFFER_SIZE      255U    //Maximum number of bytes per input packet
 
 #define GATEWAY_ID          0x53AC  //ID that all emmiters must use to communicate with gateway
-#define GATEWAY_ID_LEN      2       //Number of bytes that compose the gateway ID
+#define GATEWAY_ID_LEN      2U      //Number of bytes that compose the gateway ID
 
 #define ACK_TIMEOUT         5000U   //Acknowledgment timeout (ms)
 

@@ -6,6 +6,7 @@
 
 uint8 LoRaConfig(void);
 bool isChannelBusy(void);
+bool isDataDuplicated(void);
 uint8 sendPacket(uint8* packet, uint16 packet_len);
 //uint8 awaitAck(void);
 uint8 replyAck(void);
