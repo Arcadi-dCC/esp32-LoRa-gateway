@@ -11,7 +11,8 @@ RTC_DATA_ATTR uint8 new_value = 31;
 RTC_DATA_ATTR uint8 old_value = 0;
 
 RTC_DATA_ATTR uint16 ack_fails = 0;
-RTC_DATA_ATTR uint16 not_five_bytes = 0;
+RTC_DATA_ATTR uint16 epoch_fails = 0;
+RTC_DATA_ATTR uint16 unexpected_num_bytes = 0;
 RTC_DATA_ATTR uint16 missed_data = 0;
 RTC_DATA_ATTR uint16 duplicated_data = 0;
 
@@ -22,16 +23,16 @@ void setup() {
   Serial.println("LoRa Gateway");
 
   //Connect to WiFi
-  //if (WiFiConnect())
-  //{
-  //  SwReset(10);
-  //}
+  if (WiFiConnect())
+  {
+    SwReset(10);
+  }
 
   //Connect to InfluxDB server
-  //if (InfluxServerConnect())
-  //{
-  //  SwReset(10);
-  //}
+  if (InfluxServerConnect())
+  {
+    SwReset(10);
+  }
 
   //Add tags
   //sensor.addTag("test", "LoRa_2minutes");
@@ -52,9 +53,15 @@ void setup() {
 }
 
 void loop(){
-  if(in_packet_len)
+
+  switch(in_packet_len)
   {
-    if(in_packet_len == GATEWAY_ID_LEN + 3U)
+    case 0U:
+    {
+      //Do nothing
+    }break;
+
+    case (GATEWAY_ID_LEN + 3U):
     {
       if(replyAck())
       {
@@ -79,13 +86,31 @@ void loop(){
 
         //(void)uploadValue("received_value", new_value);
       }
-    }
-    else
-    {
-      Serial.println("Not 5 bytes received");
-      not_five_bytes++;
+      break;
     }
 
+    case (GATEWAY_ID_LEN + 1U):
+    {
+      if(in_packet[GATEWAY_ID_LEN] == EPOCH_MSG_ID)
+      {
+        if(replyEpochTime())
+        {
+          Serial.println("Failed to reply with epoch time");
+          epoch_fails++;
+        }
+        break;
+      }
+    }
+
+    default:
+    {
+      Serial.println("Received packet had an unexpected number of bytes");
+      unexpected_num_bytes++;
+    }
+  }
+
+  if(in_packet_len)
+  {
     Serial.print("Received string: ");
     printStr((uint8*)in_packet, in_packet_len);
     Serial.println();

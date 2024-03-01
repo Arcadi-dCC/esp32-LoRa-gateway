@@ -19,7 +19,9 @@
 
 #define GATEWAY_ID          0x53AC  //ID that all emmiters must use to communicate with gateway
 #define GATEWAY_ID_LEN      2U      //Number of bytes that compose the gateway ID
+#define EPOCH_MSG_ID        0xFF    //ID that defines a time update message
 
 #define ACK_TIMEOUT         5000U   //Acknowledgment timeout (ms)
+#define EPOCH_TIMEOUT       5000U   //Epoch time reply timeout (ms)
 
 #endif //LoRaCfg_H

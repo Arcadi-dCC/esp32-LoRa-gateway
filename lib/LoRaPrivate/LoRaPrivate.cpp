@@ -144,6 +144,53 @@ bool isDataDuplicated(void)
   return returner;
 }
 
+//Sends a message containing the gateway ID [0,1], the time message ID[2] and
+//the current time in epoch(32bit) format split in 4 bytes [3 MSB,6 LSB]
+//Timeout of EPOCH_TIMEOUT. Does not expect ACK.
+//Returns 0 if successful, 1 if error
+uint8 replyEpochTime(void)
+{
+  uint8 err_reg = 1;
+  uint8 out_packet[GATEWAY_ID_LEN + 5U];
+  out_packet[0] = (GATEWAY_ID & 0xFF00) >> 8;
+  out_packet[1] = GATEWAY_ID & 0x00FF;
+  out_packet[2] = EPOCH_MSG_ID; 
+
+  time_t epoch;
+  struct tm timeinfo;
+
+  while(!LoRa.beginPacket()); //exit receive mode
+
+  uint32 start_time = millis();
+  do
+  {
+    if (getLocalTime(&timeinfo))
+    {
+      time(&epoch);
+
+      Serial.print("Sending current epoch time: ");
+      Serial.println(epoch);
+  
+      for(uint8 i = GATEWAY_ID_LEN + 1; i < sizeof(out_packet); i++)
+      {
+        out_packet[i] = (byte)((epoch & (0xFF000000 >> (8*(i-GATEWAY_ID_LEN-1U)))) >> (8*(sizeof(out_packet)-i-1)));
+      }
+      
+      err_reg = (uint8)isChannelBusy();
+    }
+  } while(err_reg and ((millis() - start_time) < EPOCH_TIMEOUT));
+
+  if(!err_reg)
+  {
+    err_reg = sendPacket(out_packet, sizeof(out_packet));
+  }
+  Serial.println();
+  Serial.println();
+
+  LoRa.receive(); //reenter receive mode
+  return err_reg;
+}
+
 /*NOT USED
 //ISR called when the sending of data is finished.
 void onTxDone(void)
