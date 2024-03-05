@@ -18,6 +18,22 @@ uint8 printStr(uint8* str, uint16 len)
   else return 1;
 }
 
+//Prints a uint8 string of len length in HEX. Returns 0 if successful, 1 if len = 0
+uint8 printStrHEX(uint8* str, uint16 len)
+{
+  if(len)
+  {
+    Serial.print("0x | ");
+    for (uint16 w = 0; w < len; w++)
+    {
+      Serial.print(str[w], HEX);
+      Serial.print(" | ");
+    }
+    return 0;
+  }
+  else return 1;
+}
+
 //Performs a software reset after warning through the serial output and doing a countdown.
 void SwReset(uint8 countdown)
 {

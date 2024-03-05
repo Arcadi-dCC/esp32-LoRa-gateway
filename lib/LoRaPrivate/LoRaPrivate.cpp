@@ -168,12 +168,11 @@ uint8 replyEpochTime(void)
     {
       time(&epoch);
 
-      Serial.print("Sending current epoch time: ");
-      Serial.println(epoch);
+      uint8* p_epoch = (uint8*)&epoch;
   
-      for(uint8 i = GATEWAY_ID_LEN + 1; i < sizeof(out_packet); i++)
+      for(uint8 i = GATEWAY_ID_LEN + 1U; i < sizeof(out_packet); i++)
       {
-        out_packet[i] = (byte)((epoch & (0xFF000000 >> (8*(i-GATEWAY_ID_LEN-1U)))) >> (8*(sizeof(out_packet)-i-1)));
+        out_packet[i] = p_epoch[i- GATEWAY_ID_LEN - 1U]; //little endian arch
       }
       
       err_reg = (uint8)isChannelBusy();
@@ -184,7 +183,10 @@ uint8 replyEpochTime(void)
   {
     err_reg = sendPacket(out_packet, sizeof(out_packet));
   }
-  Serial.println();
+  Serial.print("Sent current epoch time: 0x");
+  Serial.println(epoch, HEX);
+  Serial.print("In string: ");
+  printStrHEX(out_packet, sizeof(out_packet));
   Serial.println();
 
   LoRa.receive(); //reenter receive mode
