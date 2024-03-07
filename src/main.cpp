@@ -5,6 +5,7 @@
 #include <influxDbClientPrivate.h>
 #include <LoRaPrivate.h>
 #include <mailClientPrivate.h>
+#include <timePrivate.h>
 #include <WiFiPrivate.h>
 
 RTC_DATA_ATTR uint8 new_value = 31;
@@ -24,6 +25,12 @@ void setup() {
 
   //Connect to WiFi
   if (WiFiConnect())
+  {
+    SwReset(10);
+  }
+
+  //Configure local time via WiFi
+  if(timeConfigWiFi())
   {
     SwReset(10);
   }

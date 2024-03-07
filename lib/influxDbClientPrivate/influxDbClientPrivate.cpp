@@ -9,8 +9,6 @@ Point sensor(_MEASUREMENT); // Data point (_measurement);
 //Connects to the InfluxDB server. Returns: 0 if connection successful, 1 if error.
 uint8 InfluxServerConnect(void)
 {
-  timeSync(TZ_INFO, "pool.ntp.org", "time.nis.gov");
-  
   Serial.print("Connecting to InfluxDB local server");
   int returner = 0;
   byte connection_timer = 0;
