@@ -145,49 +145,51 @@ bool isDataDuplicated(void)
 }
 
 //Sends a message containing the gateway ID [0,1], the time message ID[2] and
-//the current time in epoch(32bit) format split in 4 bytes [3 MSB,6 LSB]
-//Timeout of EPOCH_TIMEOUT. Does not expect ACK.
+//the current time in calendar time format (long) split in 4 bytes [3 MSB,6 LSB]
+//Timeout of CLDTIME_TIMEOUT. Does not expect ACK.
 //Returns 0 if successful, 1 if error
-uint8 replyEpochTime(void)
+uint8 replyCalendarTime(void)
 {
   uint8 err_reg = 1;
   uint8 out_packet[GATEWAY_ID_LEN + 5U];
   out_packet[0] = (GATEWAY_ID & 0xFF00) >> 8;
   out_packet[1] = GATEWAY_ID & 0x00FF;
-  out_packet[2] = EPOCH_MSG_ID; 
+  out_packet[2] = CLDTIME_MSG_ID; 
 
-  time_t epoch;
-  struct tm timeinfo;
+  time_t cldtime;
 
   while(!LoRa.beginPacket()); //exit receive mode
 
   uint32 start_time = millis();
   do
   {
-    if (getLocalTime(&timeinfo))
-    {
-      time(&epoch);
+    time(&cldtime);
 
-      uint8* p_epoch = (uint8*)&epoch;
+    uint8* p_cldtime = (uint8*)&cldtime;
   
-      for(uint8 i = GATEWAY_ID_LEN + 1U; i < sizeof(out_packet); i++)
-      {
-        out_packet[i] = p_epoch[i- GATEWAY_ID_LEN - 1U]; //little endian arch
-      }
-      
-      err_reg = (uint8)isChannelBusy();
+    for(uint8 i = GATEWAY_ID_LEN + 1U; i < sizeof(out_packet); i++)
+    {
+      out_packet[i] = p_cldtime[i- GATEWAY_ID_LEN - 1U]; //little endian arch
     }
-  } while(err_reg and ((millis() - start_time) < EPOCH_TIMEOUT));
+      
+    err_reg = (uint8)isChannelBusy();
+  } while(err_reg and ((millis() - start_time) < CLDTIME_TIMEOUT));
 
   if(!err_reg)
   {
     err_reg = sendPacket(out_packet, sizeof(out_packet));
+
+    if(!err_reg)
+    {
+      Serial.print("Sent current calendar time: 0x");
+      Serial.print(cldtime, HEX);
+      Serial.print(" = DEC ");
+      Serial.println(cldtime);
+      Serial.print("In string: ");
+      printStrHEX(out_packet, sizeof(out_packet));
+      Serial.println();
+    }
   }
-  Serial.print("Sent current epoch time: 0x");
-  Serial.println(epoch, HEX);
-  Serial.print("In string: ");
-  printStrHEX(out_packet, sizeof(out_packet));
-  Serial.println();
 
   LoRa.receive(); //reenter receive mode
   return err_reg;

@@ -12,7 +12,7 @@ RTC_DATA_ATTR uint8 new_value = 31;
 RTC_DATA_ATTR uint8 old_value = 0;
 
 RTC_DATA_ATTR uint16 ack_fails = 0;
-RTC_DATA_ATTR uint16 epoch_fails = 0;
+RTC_DATA_ATTR uint16 cldtime_fails = 0;
 RTC_DATA_ATTR uint16 unexpected_num_bytes = 0;
 RTC_DATA_ATTR uint16 missed_data = 0;
 RTC_DATA_ATTR uint16 duplicated_data = 0;
@@ -98,12 +98,12 @@ void loop(){
 
     case (GATEWAY_ID_LEN + 1U):
     {
-      if(in_packet[GATEWAY_ID_LEN] == EPOCH_MSG_ID)
+      if(in_packet[GATEWAY_ID_LEN] == CLDTIME_MSG_ID)
       {
-        if(replyEpochTime())
+        if(replyCalendarTime())
         {
-          Serial.println("Failed to reply with epoch time");
-          epoch_fails++;
+          Serial.println("Failed to reply with calendar time");
+          cldtime_fails++;
         }
         break;
       }
