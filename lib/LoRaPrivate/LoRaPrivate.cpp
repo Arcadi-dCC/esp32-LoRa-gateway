@@ -144,6 +144,57 @@ bool isDataDuplicated(void)
   return returner;
 }
 
+//Sends a message containing the gateway ID [0,1], the time message ID[2] and
+//the current time in calendar time format (long) split in 4 bytes [3 MSB,6 LSB]
+//Timeout of CLDTIME_TIMEOUT. Does not expect ACK.
+//Returns 0 if successful, 1 if error
+uint8 replyCalendarTime(void)
+{
+  uint8 err_reg = 1;
+  uint8 out_packet[GATEWAY_ID_LEN + 5U];
+  out_packet[0] = (GATEWAY_ID & 0xFF00) >> 8;
+  out_packet[1] = GATEWAY_ID & 0x00FF;
+  out_packet[2] = CLDTIME_MSG_ID; 
+
+  time_t cldtime;
+
+  while(!LoRa.beginPacket()); //exit receive mode
+
+  uint32 start_time = millis();
+  do
+  {
+    time(&cldtime);
+
+    uint8* p_cldtime = (uint8*)&cldtime;
+  
+    for(uint8 i = GATEWAY_ID_LEN + 1U; i < sizeof(out_packet); i++)
+    {
+      out_packet[i] = p_cldtime[i- GATEWAY_ID_LEN - 1U]; //little endian arch
+    }
+      
+    err_reg = (uint8)isChannelBusy();
+  } while(err_reg and ((millis() - start_time) < CLDTIME_TIMEOUT));
+
+  if(!err_reg)
+  {
+    err_reg = sendPacket(out_packet, sizeof(out_packet));
+
+    if(!err_reg)
+    {
+      Serial.print("Sent current calendar time: 0x");
+      Serial.print(cldtime, HEX);
+      Serial.print(" = DEC ");
+      Serial.println(cldtime);
+      Serial.print("In string: ");
+      printStrHEX(out_packet, sizeof(out_packet));
+      Serial.println();
+    }
+  }
+
+  LoRa.receive(); //reenter receive mode
+  return err_reg;
+}
+
 /*NOT USED
 //ISR called when the sending of data is finished.
 void onTxDone(void)
