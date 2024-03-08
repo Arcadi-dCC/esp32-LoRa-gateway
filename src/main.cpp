@@ -42,14 +42,14 @@ void setup() {
   }
 
   //Add tags
-  //sensor.addTag("test", "LoRa_2minutes");
-  //sensor.addTag("try", "20240227_1");
+  sensor.addTag("test", "LoRa_2minutes");
+  sensor.addTag("try", "20240227_1");
 
   //Configure and log into e-mail account
-  //if (EmailConfig())
-  //{
-  //  SwReset(10);
-  //}
+  if (EmailConfig())
+  {
+    SwReset(10);
+  }
 
   if (LoRaConfig())
   {
