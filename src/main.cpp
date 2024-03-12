@@ -8,13 +8,11 @@
 #include <timePrivate.h>
 #include <WiFiPrivate.h>
 
-RTC_DATA_ATTR uint8 new_value = 31;
-RTC_DATA_ATTR uint8 old_value = 0;
+RTC_DATA_ATTR uint16 new_value = 31;
 
 RTC_DATA_ATTR uint16 ack_fails = 0;
 RTC_DATA_ATTR uint16 cldtime_fails = 0;
 RTC_DATA_ATTR uint16 unexpected_num_bytes = 0;
-RTC_DATA_ATTR uint16 missed_data = 0;
 RTC_DATA_ATTR uint16 duplicated_data = 0;
 
 void setup() {
@@ -34,22 +32,22 @@ void setup() {
   {
     SwReset(10);
   }
-
+  
   //Connect to InfluxDB server
-  if (InfluxServerConnect())
-  {
-    SwReset(10);
-  }
+  //if (InfluxServerConnect())
+  //{
+  //  SwReset(10);
+  //}
 
   //Add tags
-  sensor.addTag("test", "LoRa_2minutes");
-  sensor.addTag("try", "20240227_1");
+  //sensor.addTag("test", "LoRa_5minutes");
+  //sensor.addTag("try", "20240308_1");
 
   //Configure and log into e-mail account
-  if (EmailConfig())
-  {
-    SwReset(10);
-  }
+  //if (EmailConfig())
+  //{
+  //  SwReset(10);
+  //}
 
   if (LoRaConfig())
   {
@@ -68,7 +66,7 @@ void loop(){
       //Do nothing
     }break;
 
-    case (GATEWAY_ID_LEN + 3U):
+    case (GATEWAY_ID_LEN + 4U):
     {
       if(replyAck())
       {
@@ -83,15 +81,14 @@ void loop(){
       }
       else
       {
-        old_value = new_value;
-        new_value = in_packet[GATEWAY_ID_LEN + 2U];
-        
-        if (((old_value + 1) % 32) != new_value)
-        {
-          missed_data++;
-        }
+        new_value = *((uint16*)(&in_packet[GATEWAY_ID_LEN + 2U]));
+        Serial.print("Received value: ");
+        Serial.println(new_value);
 
         //(void)uploadValue("received_value", new_value);
+        //(void)uploadValue("ack_fails", ack_fails);
+        //(void)uploadValue("unexpected_num_bytes", unexpected_num_bytes);
+        //(void)uploadValue("duplicated_data", duplicated_data);
       }
       break;
     }
@@ -127,4 +124,6 @@ void loop(){
 
     in_packet_len = 0;
   }
+
+  (void)checkTimeUpdate();
 }
