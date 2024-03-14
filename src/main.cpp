@@ -8,20 +8,13 @@
 #include <timePrivate.h>
 #include <WiFiPrivate.h>
 
-uint16 new_value = 31;
-uint16 top_value = 170;
+RTC_DATA_ATTR uint8 new_value = 31;
+RTC_DATA_ATTR uint8 old_value = 31;
 
-//RTC_DATA_ATTR uint16 ack_fails = 0;
-//RTC_DATA_ATTR uint16 cldtime_fails = 0;
-//RTC_DATA_ATTR uint16 unexpected_num_bytes = 0;
-//RTC_DATA_ATTR uint16 duplicated_data = 0;
-
-uint16 gateway_time_upd = 0;
-uint16 emitter_time_upd = 0;
-
-String first_part = "Pin 13's ADC value of ";
-String third_part = "has been reached.";
-String final_string ="";
+RTC_DATA_ATTR uint16 unexpected_num_bytes = 0;
+RTC_DATA_ATTR uint16 duplicated_data = 0;
+RTC_DATA_ATTR uint16 missing_packet = 0; //when the new value received is not the last one + 1 % 32
+RTC_DATA_ATTR uint16 unmatching_values = 0; //when the two numbers received in a string are not identical
 
 void setup() {
 
@@ -42,20 +35,20 @@ void setup() {
   }
   
   //Connect to InfluxDB server
-  if (InfluxServerConnect())
-  {
-    SwReset(10);
-  }
+  //if (InfluxServerConnect())
+  //{
+  //  SwReset(10);
+  //}
 
   //Add tags
-  sensor.addTag("test", "LoRa_5minutes");
-  sensor.addTag("try", "20240312_1");
+  //sensor.addTag("test", "LoRa_distance");
+  ///sensor.addTag("try", "20240315_1");
 
   //Configure and log into e-mail account
-  if (EmailConfig())
-  {
-    SwReset(10);
-  }
+  //if (EmailConfig())
+  //{
+  //  SwReset(10);
+  //}
 
   if (LoRaConfig())
   {
@@ -76,30 +69,42 @@ void loop(){
 
     case (GATEWAY_ID_LEN + 4U):
     {
-      if(replyAck())
-      {
-        Serial.println("Failed to reply with acknowledgement");
-        //ack_fails++;
-      }
-
       if(isDataDuplicated())
       {
+        if(replyAck())
+        {
+          Serial.println("Failed to reply with acknowledgement");
+        }
         Serial.println("Received data was duplicated");
-        //duplicated_data++;
+        duplicated_data++;
+        (void)uploadValue("duplicated_data", duplicated_data);
       }
       else
       {
-        new_value = *((uint16*)(&in_packet[GATEWAY_ID_LEN + 2U]));
-        Serial.print("Received value: ");
-        Serial.println(new_value);
-
-        (void)uploadValue("new_value", new_value);
-
-        if (new_value > top_value)
+        if (in_packet[GATEWAY_ID_LEN + 2U] == in_packet[GATEWAY_ID_LEN + 3U])
         {
-          top_value = new_value;
-          final_string = first_part + top_value + third_part;
-          EmailSend("New top value", final_string);
+          if(replyAck())
+          {
+            Serial.println("Failed to reply with acknowledgement");
+          }
+          old_value = new_value;
+          new_value = in_packet[GATEWAY_ID_LEN + 3U];
+          if(((old_value + 1U) % 32U) != new_value)
+          {
+            Serial.println("A packet has gone missing");
+            missing_packet++;
+            (void)uploadValue("missing_packet", missing_packet);
+          }
+          Serial.print("Received value: ");
+          Serial.println(new_value);
+
+          (void)uploadValue("new_value", new_value);
+        }
+        else
+        {
+          Serial.println("Received data values do not match");
+          unmatching_values++;
+          (void)uploadValue("unmatching_values", unmatching_values);
         }
       }
       break;
@@ -112,12 +117,6 @@ void loop(){
         if(replyCalendarTime())
         {
           Serial.println("Failed to reply with calendar time");
-          //cldtime_fails++;
-        }
-        else
-        {
-          emitter_time_upd++;
-          (void)uploadValue("emitter_time_upd", emitter_time_upd);
         }
         break;
       }
@@ -126,7 +125,8 @@ void loop(){
     default:
     {
       Serial.println("Received packet had an unexpected number of bytes");
-      //unexpected_num_bytes++;
+      unexpected_num_bytes++;
+      (void)uploadValue("unexpected_num_bytes", unexpected_num_bytes);
     }
   }
 
@@ -142,9 +142,5 @@ void loop(){
     in_packet_len = 0;
   }
 
-  if(checkTimeUpdate() == 1U)
-  {
-    gateway_time_upd++;
-    (void)uploadValue("gateway_time_upd", gateway_time_upd);
-  }
+  (void)checkTimeUpdate();
 }
