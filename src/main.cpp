@@ -8,14 +8,20 @@
 #include <timePrivate.h>
 #include <WiFiPrivate.h>
 
-RTC_DATA_ATTR uint8 new_value = 31;
-RTC_DATA_ATTR uint8 old_value = 0;
+uint16 new_value = 31;
+uint16 top_value = 170;
 
-RTC_DATA_ATTR uint16 ack_fails = 0;
-RTC_DATA_ATTR uint16 cldtime_fails = 0;
-RTC_DATA_ATTR uint16 unexpected_num_bytes = 0;
-RTC_DATA_ATTR uint16 missed_data = 0;
-RTC_DATA_ATTR uint16 duplicated_data = 0;
+//RTC_DATA_ATTR uint16 ack_fails = 0;
+//RTC_DATA_ATTR uint16 cldtime_fails = 0;
+//RTC_DATA_ATTR uint16 unexpected_num_bytes = 0;
+//RTC_DATA_ATTR uint16 duplicated_data = 0;
+
+uint16 gateway_time_upd = 0;
+uint16 emitter_time_upd = 0;
+
+String first_part = "Pin 13's ADC value of ";
+String third_part = "has been reached.";
+String final_string ="";
 
 void setup() {
 
@@ -34,7 +40,7 @@ void setup() {
   {
     SwReset(10);
   }
-
+  
   //Connect to InfluxDB server
   if (InfluxServerConnect())
   {
@@ -42,8 +48,8 @@ void setup() {
   }
 
   //Add tags
-  sensor.addTag("test", "LoRa_2minutes");
-  sensor.addTag("try", "20240227_1");
+  sensor.addTag("test", "LoRa_5minutes");
+  sensor.addTag("try", "20240312_1");
 
   //Configure and log into e-mail account
   if (EmailConfig())
@@ -68,30 +74,33 @@ void loop(){
       //Do nothing
     }break;
 
-    case (GATEWAY_ID_LEN + 3U):
+    case (GATEWAY_ID_LEN + 4U):
     {
       if(replyAck())
       {
         Serial.println("Failed to reply with acknowledgement");
-        ack_fails++;
+        //ack_fails++;
       }
 
       if(isDataDuplicated())
       {
         Serial.println("Received data was duplicated");
-        duplicated_data++;
+        //duplicated_data++;
       }
       else
       {
-        old_value = new_value;
-        new_value = in_packet[GATEWAY_ID_LEN + 2U];
-        
-        if (((old_value + 1) % 32) != new_value)
-        {
-          missed_data++;
-        }
+        new_value = *((uint16*)(&in_packet[GATEWAY_ID_LEN + 2U]));
+        Serial.print("Received value: ");
+        Serial.println(new_value);
 
-        //(void)uploadValue("received_value", new_value);
+        (void)uploadValue("new_value", new_value);
+
+        if (new_value > top_value)
+        {
+          top_value = new_value;
+          final_string = first_part + top_value + third_part;
+          EmailSend("New top value", final_string);
+        }
       }
       break;
     }
@@ -103,7 +112,12 @@ void loop(){
         if(replyCalendarTime())
         {
           Serial.println("Failed to reply with calendar time");
-          cldtime_fails++;
+          //cldtime_fails++;
+        }
+        else
+        {
+          emitter_time_upd++;
+          (void)uploadValue("emitter_time_upd", emitter_time_upd);
         }
         break;
       }
@@ -112,7 +126,7 @@ void loop(){
     default:
     {
       Serial.println("Received packet had an unexpected number of bytes");
-      unexpected_num_bytes++;
+      //unexpected_num_bytes++;
     }
   }
 
@@ -126,5 +140,11 @@ void loop(){
     Serial.println();
 
     in_packet_len = 0;
+  }
+
+  if(checkTimeUpdate() == 1U)
+  {
+    gateway_time_upd++;
+    (void)uploadValue("gateway_time_upd", gateway_time_upd);
   }
 }
