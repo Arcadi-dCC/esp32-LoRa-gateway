@@ -35,14 +35,14 @@ void setup() {
   }
   
   //Connect to InfluxDB server
-  //if (InfluxServerConnect())
-  //{
-  //  SwReset(10);
-  //}
+  if (InfluxServerConnect())
+  {
+    SwReset(10);
+  }
 
   //Add tags
-  //sensor.addTag("test", "LoRa_distance");
-  ///sensor.addTag("try", "20240315_1");
+  sensor.addTag("test", "LoRa_distance");
+  sensor.addTag("try", "20240319_1");
 
   //Configure and log into e-mail account
   //if (EmailConfig())

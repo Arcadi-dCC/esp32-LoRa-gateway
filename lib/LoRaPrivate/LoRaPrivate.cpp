@@ -32,6 +32,8 @@ uint8 LoRaConfig(void)
   
   LoRa.setSpreadingFactor(SPR_FACT);
   LoRa.setSignalBandwidth(BANDWIDTH);
+  LoRa.setTxPower(TX_POWER);
+  LoRa.setGain(LNA_GAIN);
   //LoRa.setPreambleLength(PREAM_LEN);
   //LoRa.enableInvertIQ();
   //LoRa.setSyncWord(SYNC_WORD);

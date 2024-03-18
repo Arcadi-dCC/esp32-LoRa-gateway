@@ -10,8 +10,10 @@
 #define DIO0        26
 
 #define FREQ        868E6           //Signal frequency
-#define SPR_FACT    7               //Spreading factor
-#define BANDWIDTH   250E3           //Bandwidth
+#define SPR_FACT    12               //Spreading factor
+#define BANDWIDTH   125E3           //Bandwidth
+#define TX_POWER    20              //Transmitter power [2, 20] (dB)
+#define LNA_GAIN    6               //Low-noise amplifier gain [1, 6]. 0->automatic
 //#define SYNC_WORD 0x00            //Syncronization byte
 //#define PREAM_LEN 8               //Signal preamble length
 
