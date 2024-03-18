@@ -14,15 +14,15 @@ uint8 WiFiConnect(void)
   WiFi.mode(WIFI_STA);
   wifiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
 
-  byte connection_timer = 0;
-  while ((wifiMulti.run() != WL_CONNECTED) and (connection_timer < 19)) {
-    connection_timer++;
+  uint32 start_time = millis();
+  while ((wifiMulti.run() != WL_CONNECTED) and ((millis() - start_time) < WIFI_TIMEOUT))
+  {
     Serial.print(".");
     delay(500);
   }
   Serial.println();
 
-  if (connection_timer > 18)
+  if (millis() - start_time >= WIFI_TIMEOUT)
   {
     Serial.println("Could not connect to WiFi (timeout reached).");
     return 1;

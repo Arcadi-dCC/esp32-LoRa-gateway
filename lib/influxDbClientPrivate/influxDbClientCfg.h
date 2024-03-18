@@ -8,4 +8,7 @@
 
 #define _MEASUREMENT        "LoRa"
 
+#define INFLUXDB_CON_TIMEOUT    60000U      //InfluxDB connection to server timeout (ms)
+#define INFLUXDB_UPL_TIMEOUT    10000U      //Data upload to InfluxDB server timeout (ms)
+
 #endif //influxDbClientCfg_H
