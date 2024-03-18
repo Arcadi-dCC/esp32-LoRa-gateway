@@ -35,6 +35,7 @@ uint8 InfluxServerConnect(void)
   return returner;
 }
 
+#include <LoRa.h>
 //Uploads a value to InfluxDB server with specified field. Returns: 0 if successful, 1 if error.
 uint8 uploadValue(const String &field, uint8 value)
 {
@@ -46,6 +47,7 @@ uint8 uploadValue(const String &field, uint8 value)
 
   sensor.clearFields();
   sensor.addField(field, value);
+  sensor.addField("rssi", LoRa.packetRssi());
 
   int upload_timer = 0;
   while ((!client.writePoint(sensor)) and (upload_timer < 2))
