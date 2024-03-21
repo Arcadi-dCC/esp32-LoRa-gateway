@@ -8,12 +8,7 @@
 #include <timePrivate.h>
 #include <WiFiPrivate.h>
 
-RTC_DATA_ATTR uint8 new_value = 31;
-RTC_DATA_ATTR uint8 old_value = 31;
-
-RTC_DATA_ATTR uint16 unexpected_num_bytes = 0;
-RTC_DATA_ATTR uint16 duplicated_data = 0;
-RTC_DATA_ATTR uint16 missing_packet = 0; //when the new value received is not the last one + 1 % 32
+uint16 new_value = 31;
 
 void setup() {
 
@@ -75,20 +70,11 @@ void loop(){
       if(isDataDuplicated())
       {
         Serial.println("Received data was duplicated");
-        duplicated_data++;
-
-        (void)uploadValue("duplicated_data", duplicated_data);
       }
       else
       {
-        old_value = new_value;
-        new_value = in_packet[GATEWAY_ID_LEN + 3U];
-        if(((old_value + 1U) % 32U) != new_value)
-        {
-          Serial.println("A packet has gone missing");
-          missing_packet++;
-          (void)uploadValue("missing_packet", missing_packet);
-        }
+        new_value = *((uint16*)(&in_packet[GATEWAY_ID_LEN+2U]));
+
         Serial.print("Received value: ");
         Serial.println(new_value);
         (void)uploadValue("new_value", new_value);
@@ -111,8 +97,6 @@ void loop(){
     default:
     {
       Serial.println("Received packet had an unexpected number of bytes");
-      unexpected_num_bytes++;
-      (void)uploadValue("unexpected_num_bytes", unexpected_num_bytes);
     }
   }
 
