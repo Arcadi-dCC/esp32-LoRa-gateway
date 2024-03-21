@@ -32,12 +32,13 @@ uint8 LoRaConfig(void)
   
   LoRa.setSpreadingFactor(SPR_FACT);
   LoRa.setSignalBandwidth(BANDWIDTH);
-  LoRa.setTxPower(TX_POWER);
-  LoRa.setGain(LNA_GAIN);
-  LoRa.setCodingRate4(CR_DEN);
+  //LoRa.setTxPower(TX_POWER);
+  //LoRa.setGain(LNA_GAIN);
+  //LoRa.setCodingRate4(CR_DEN);
   //LoRa.setPreambleLength(PREAM_LEN);
   //LoRa.enableInvertIQ();
   //LoRa.setSyncWord(SYNC_WORD);
+  LoRa.enableCrc();
 
   LoRa.onCadDone(onCadDone); //call onCadDone ISR when channel activity detection has finished
   //LoRa.onTxDone(onTxDone); //call onTxDone ISR when packet has been fully sent

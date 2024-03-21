@@ -12,9 +12,9 @@
 #define FREQ        868E6           //Signal frequency
 #define SPR_FACT    12               //Spreading factor
 #define BANDWIDTH   125E3           //Bandwidth
-#define TX_POWER    20              //Transmitter power [2, 20] (dB)
-#define LNA_GAIN    6               //Low-noise amplifier gain [1, 6]. 0->automatic
-#define CR_DEN      8               //Denominator of the coding rate [5, 8]. (CR = 4/x)
+//#define TX_POWER    20              //Transmitter power [2, 20] (dB)
+//#define LNA_GAIN    6               //Low-noise amplifier gain [1, 6]. 0->automatic
+//#define CR_DEN      8               //Denominator of the coding rate [5, 8]. (CR = 4/x)
 //#define SYNC_WORD 0x00            //Syncronization byte
 //#define PREAM_LEN 8               //Signal preamble length
 
