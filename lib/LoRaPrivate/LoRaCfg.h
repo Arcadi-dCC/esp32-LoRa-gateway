@@ -24,7 +24,7 @@
 #define GATEWAY_ID_LEN      2U      //Number of bytes that compose the gateway ID
 #define CLDTIME_MSG_ID      0xFF    //ID that defines a time update message
 
-#define ACK_TIMEOUT         20000U   //Acknowledgment timeout (ms)
-#define CLDTIME_TIMEOUT     20000U   //Calendar time reply timeout (ms)
+#define ACK_TIMEOUT         15000U   //Acknowledgment timeout (ms)
+#define CLDTIME_TIMEOUT     15000U   //Calendar time reply timeout (ms)
 
 #endif //LoRaCfg_H
