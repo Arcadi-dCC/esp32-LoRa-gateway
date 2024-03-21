@@ -42,7 +42,7 @@ void setup() {
 
   //Add tags
   sensor.addTag("test", "LoRa_distance");
-  sensor.addTag("try", "20240319_1");
+  sensor.addTag("try", "20240321_1");
 
   //Configure and log into e-mail account
   //if (EmailConfig())
@@ -69,24 +69,26 @@ void loop(){
 
     case (GATEWAY_ID_LEN + 4U):
     {
-      if(isDataDuplicated())
+      if(in_packet[GATEWAY_ID_LEN + 2U] != in_packet[GATEWAY_ID_LEN + 3U])
+      {
+        Serial.println("Received data values do not match");
+        unmatching_values++;
+        (void)uploadValue("unmatching_values", unmatching_values);
+      }
+      else
       {
         if(replyAck())
         {
           Serial.println("Failed to reply with acknowledgement");
         }
-        Serial.println("Received data was duplicated");
-        duplicated_data++;
-        (void)uploadValue("duplicated_data", duplicated_data);
-      }
-      else
-      {
-        if (in_packet[GATEWAY_ID_LEN + 2U] == in_packet[GATEWAY_ID_LEN + 3U])
+        if(isDataDuplicated())
         {
-          if(replyAck())
-          {
-            Serial.println("Failed to reply with acknowledgement");
-          }
+          Serial.println("Received data was duplicated");
+          duplicated_data++;
+          (void)uploadValue("duplicated_data", duplicated_data);
+        }
+        else
+        {
           old_value = new_value;
           new_value = in_packet[GATEWAY_ID_LEN + 3U];
           if(((old_value + 1U) % 32U) != new_value)
@@ -99,12 +101,6 @@ void loop(){
           Serial.println(new_value);
 
           (void)uploadValue("new_value", new_value);
-        }
-        else
-        {
-          Serial.println("Received data values do not match");
-          unmatching_values++;
-          (void)uploadValue("unmatching_values", unmatching_values);
         }
       }
       break;
