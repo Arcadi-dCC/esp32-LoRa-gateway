@@ -40,7 +40,7 @@ void setup() {
   }
 
   //Add tags
-  sensor.addTag("test", "LoRa_distance");
+  sensor.addTag("test", "LoRa_5minutes");
   sensor.addTag("try", "20240321_2");
 
   //Configure and log into e-mail account
