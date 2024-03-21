@@ -11,6 +11,8 @@
 #define AUTHOR_PASSWORD "yajhwpxuyhmmhrdd"
 
 #define RECIPIENT_NAME  "esp32 sender"
-#define RECIPIENT_EMAIL "espsender1@gmail.com" // Recipient's email
+#define RECIPIENT_EMAIL "espsender1@gmail.com"  // Recipient's email
+
+#define CON_TIMEOUT     5000U                   //Timeout for all connections to e-mail server 
 
 #endif //mailClientCfg_H

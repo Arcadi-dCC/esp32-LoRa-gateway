@@ -38,6 +38,7 @@ uint8 LoRaConfig(void)
   //LoRa.setPreambleLength(PREAM_LEN);
   //LoRa.enableInvertIQ();
   //LoRa.setSyncWord(SYNC_WORD);
+  LoRa.enableCrc();
 
   LoRa.onCadDone(onCadDone); //call onCadDone ISR when channel activity detection has finished
   //LoRa.onTxDone(onTxDone); //call onTxDone ISR when packet has been fully sent

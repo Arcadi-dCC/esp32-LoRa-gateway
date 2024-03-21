@@ -11,16 +11,15 @@ uint8 InfluxServerConnect(void)
 {
   Serial.print("Connecting to InfluxDB local server");
   int returner = 0;
-  byte connection_timer = 0;
+  uint32 start_time = millis();
 
-  while ((!client.validateConnection()) and (connection_timer < 2))
+  while ((!client.validateConnection()) and ((millis() - start_time) < INFLUXDB_CON_TIMEOUT))
   {
-    connection_timer++;
     Serial.print(".");
     delay(500);
   }
   Serial.println();
-  if (connection_timer > 1)
+  if ((millis() - start_time) >= INFLUXDB_CON_TIMEOUT)
   {
     Serial.print("Timeout reached. InfluxDB connection failed: ");
     Serial.println(client.getLastErrorMessage());
@@ -47,15 +46,14 @@ uint8 uploadValue(const String &field, uint8 value)
   sensor.clearFields();
   sensor.addField(field, value);
 
-  int upload_timer = 0;
-  while ((!client.writePoint(sensor)) and (upload_timer < 2))
+  uint32 start_time = millis();
+  while ((!client.writePoint(sensor)) and ((millis() - start_time) < INFLUXDB_UPL_TIMEOUT))
   {
-    upload_timer++;
     Serial.print(".");
-    delay(500);
+    delay(300);
   }
   Serial.println();
-  if (upload_timer > 1)
+  if ((millis() - start_time) >= INFLUXDB_UPL_TIMEOUT)
   {
     Serial.print("Timeout reached. InfluxDB write failed: ");
     Serial.println(client.getLastErrorMessage());

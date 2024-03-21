@@ -32,19 +32,18 @@ uint8 EmailConfig(void)
   return 0;
 }
 
-//Tries to log into the e-mail account specified in EmailConfig.
+//Tries to log into the e-mail account specified in EmailConfig. Returns 0 if successful, 1 if error
 uint8 EmailLogIn(void)
 {
   Serial.print("Logging into e-mail account");
   int returner = 0;
-  int connection_timer = 0;
-  while ((!smtp.connect(&config)) and (connection_timer < 2))
+  uint32 start_time = millis();
+  while ((!smtp.connect(&config)) and ((millis() - start_time) < CON_TIMEOUT))
   {
-    connection_timer++;
     Serial.print(".");
-    delay(500);
+    delay(300);
   }
-  if (connection_timer > 1)
+  if ((millis() - start_time) >= CON_TIMEOUT)
   {
     Serial.println();
     Serial.print("Timeout reached. ");
@@ -52,14 +51,13 @@ uint8 EmailLogIn(void)
     returner = 1;
   }
 
-  connection_timer = 0;
-  while ((!smtp.isLoggedIn()) and (connection_timer < 2))
+  start_time = millis();
+  while ((!smtp.isLoggedIn()) and ((millis() - start_time) < CON_TIMEOUT))
   {
-    connection_timer++;
     Serial.print(".");
-    delay(500);
+    delay(300);
   }
-  if (connection_timer > 1)
+  if ((millis() - start_time) >= CON_TIMEOUT)
   {
     Serial.println();
     Serial.println("Timeout reached. Not logged in mail account.");
@@ -67,15 +65,14 @@ uint8 EmailLogIn(void)
   }
   else
   {
-    connection_timer = 0;
-    while ((!smtp.isAuthenticated()) and (connection_timer < 2))
+    start_time = millis();
+    while ((!smtp.isAuthenticated()) and ((millis() - start_time) < CON_TIMEOUT))
     {
-      connection_timer++;
       Serial.print(".");
-      delay(500);
+      delay(300);
     }
     Serial.println();
-    if (connection_timer > 1)
+    if ((millis() - start_time) >= CON_TIMEOUT)
     {
       Serial.println("Timeout reached. Connected to mail service with no Auth.");
       returner = 1;
@@ -84,7 +81,7 @@ uint8 EmailLogIn(void)
   return returner;
 }
 
-//Tries to send an e-mail. Returns 1 if successful, 0 if error.
+//Tries to send an e-mail. Returns 0 if successful, 1 if error.
 uint8 EmailSend(String subject, String textMsg)
 {
   //Log in e-mail account
@@ -104,17 +101,16 @@ uint8 EmailSend(String subject, String textMsg)
   /* Start sending Email and close the session */
   Serial.print("Sending e-mail");
 
-  int send_counter = 0;
-  while ((!MailClient.sendMail(&smtp, &message, true)) and (send_counter < 2))
+  uint32 start_time = millis();
+  while ((!MailClient.sendMail(&smtp, &message, true)) and ((millis() - start_time) < CON_TIMEOUT))
   {
-    send_counter++;
     Serial.print(".");
-    delay(500);
+    delay(300);
   }
   Serial.println();
-  if (send_counter > 1)
+  if ((millis() - start_time) >= CON_TIMEOUT)
   {
-    ESP_MAIL_PRINTF("Error, Status Code: %d, Error Code: %d, Reason: %s", smtp.statusCode(), smtp.errorCode(), smtp.errorReason().c_str());
+    ESP_MAIL_PRINTF("Error (timeout reached). Status Code: %d, Error Code: %d, Reason: %s", smtp.statusCode(), smtp.errorCode(), smtp.errorReason().c_str());
     return 1;
   }
   return 0;
