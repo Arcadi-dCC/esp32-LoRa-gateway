@@ -32,13 +32,12 @@ uint8 LoRaConfig(void)
   
   LoRa.setSpreadingFactor(SPR_FACT);
   LoRa.setSignalBandwidth(BANDWIDTH);
-  //LoRa.setTxPower(TX_POWER);
-  //LoRa.setGain(LNA_GAIN);
-  //LoRa.setCodingRate4(CR_DEN);
+  LoRa.setTxPower(TX_POWER);
+  LoRa.setGain(LNA_GAIN);
+  LoRa.setCodingRate4(CR_DEN);
   //LoRa.setPreambleLength(PREAM_LEN);
   //LoRa.enableInvertIQ();
   //LoRa.setSyncWord(SYNC_WORD);
-  LoRa.enableCrc();
 
   LoRa.onCadDone(onCadDone); //call onCadDone ISR when channel activity detection has finished
   //LoRa.onTxDone(onTxDone); //call onTxDone ISR when packet has been fully sent
@@ -87,27 +86,6 @@ uint8 sendPacket(uint8* packet, uint16 packet_len)
 
   return 0;
 }
-
-/* NOT USABLE IN GATEWAY
-//Waits for acknowledgement for some time. Timeout in ms. Returns 0 if ACK, 1 if no ACK
-uint8 awaitAck()
-{
-  LoRa.receive();
-  uint32 start_time = millis();
-  while((!ack_received) or ((millis() - start_time) < ACK_TIMEOUT))
-  {
-    NOP();
-  }
-  if(ack_received)
-  {
-    ack_received = false;
-    return 0;
-  }
-  else
-  {
-    return 1;
-  }
-}*/
 
 //Sends a small packet with GATEWAY_ID and the EMITTER_ID received through LoRa.
 //Blocking: Waits for the channel to be available, with ACK_TIMEOUT.

@@ -14,7 +14,6 @@ RTC_DATA_ATTR uint8 old_value = 31;
 RTC_DATA_ATTR uint16 unexpected_num_bytes = 0;
 RTC_DATA_ATTR uint16 duplicated_data = 0;
 RTC_DATA_ATTR uint16 missing_packet = 0; //when the new value received is not the last one + 1 % 32
-RTC_DATA_ATTR uint16 unmatching_values = 0; //when the two numbers received in a string are not identical
 
 void setup() {
 
@@ -45,10 +44,10 @@ void setup() {
   sensor.addTag("try", "20240321_2");
 
   //Configure and log into e-mail account
-  //if (EmailConfig())
-  //{
-  //  SwReset(10);
-  //}
+  if (EmailConfig())
+  {
+    SwReset(10);
+  }
 
   if (LoRaConfig())
   {
@@ -69,39 +68,30 @@ void loop(){
 
     case (GATEWAY_ID_LEN + 4U):
     {
-      if(in_packet[GATEWAY_ID_LEN + 2U] != in_packet[GATEWAY_ID_LEN + 3U])
+      if(replyAck())
       {
-        Serial.println("Received data values do not match");
-        unmatching_values++;
-        (void)uploadValue("unmatching_values", unmatching_values);
+        Serial.println("Failed to reply with acknowledgement");
+      }
+      if(isDataDuplicated())
+      {
+        Serial.println("Received data was duplicated");
+        duplicated_data++;
+
+        (void)uploadValue("duplicated_data", duplicated_data);
       }
       else
       {
-        if(replyAck())
+        old_value = new_value;
+        new_value = in_packet[GATEWAY_ID_LEN + 3U];
+        if(((old_value + 1U) % 32U) != new_value)
         {
-          Serial.println("Failed to reply with acknowledgement");
+          Serial.println("A packet has gone missing");
+          missing_packet++;
+          (void)uploadValue("missing_packet", missing_packet);
         }
-        if(isDataDuplicated())
-        {
-          Serial.println("Received data was duplicated");
-          duplicated_data++;
-          (void)uploadValue("duplicated_data", duplicated_data);
-        }
-        else
-        {
-          old_value = new_value;
-          new_value = in_packet[GATEWAY_ID_LEN + 3U];
-          if(((old_value + 1U) % 32U) != new_value)
-          {
-            Serial.println("A packet has gone missing");
-            missing_packet++;
-            (void)uploadValue("missing_packet", missing_packet);
-          }
-          Serial.print("Received value: ");
-          Serial.println(new_value);
-
-          (void)uploadValue("new_value", new_value);
-        }
+        Serial.print("Received value: ");
+        Serial.println(new_value);
+        (void)uploadValue("new_value", new_value);
       }
       break;
     }
