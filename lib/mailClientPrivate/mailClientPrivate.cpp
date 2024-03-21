@@ -32,7 +32,7 @@ uint8 EmailConfig(void)
   return 0;
 }
 
-//Tries to log into the e-mail account specified in EmailConfig.
+//Tries to log into the e-mail account specified in EmailConfig. Returns 0 if successful, 1 if error
 uint8 EmailLogIn(void)
 {
   Serial.print("Logging into e-mail account");
@@ -81,7 +81,7 @@ uint8 EmailLogIn(void)
   return returner;
 }
 
-//Tries to send an e-mail. Returns 1 if successful, 0 if error.
+//Tries to send an e-mail. Returns 0 if successful, 1 if error.
 uint8 EmailSend(String subject, String textMsg)
 {
   //Log in e-mail account
