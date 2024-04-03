@@ -130,11 +130,6 @@ void loop(){
       Serial.println(gps_longitude);
       break;
     }
-    case 1U:
-    {
-      Serial.print(".");
-      break;
-    }
     case 2U:
     {
       Serial.println("Received GPS position was invalid");
