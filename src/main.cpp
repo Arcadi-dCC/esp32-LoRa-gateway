@@ -2,6 +2,7 @@
 #include <platformTypes.h>
 
 #include <customUtilities.h>
+#include <gpsPrivate.h>
 #include <influxDbClientPrivate.h>
 #include <LoRaPrivate.h>
 #include <mailClientPrivate.h>
@@ -9,6 +10,7 @@
 #include <WiFiPrivate.h>
 
 uint16 new_value = 31;
+float64 gps_latitude, gps_longitude;
 
 void setup() {
 
@@ -40,6 +42,12 @@ void setup() {
 
   //Configure and log into e-mail account
   if (EmailConfig())
+  {
+    SwReset(10);
+  }
+
+  //Configure connection with GPS module
+  if(gpsConfig())
   {
     SwReset(10);
   }
@@ -110,6 +118,32 @@ void loop(){
     Serial.println();
 
     in_packet_len = 0;
+  }
+
+  switch(getGpsPosition(&gps_latitude, &gps_longitude))
+  {
+    case 0U:
+    {
+      Serial.print("New GPS position: ");
+      Serial.print(gps_latitude);
+      Serial.print(" ");
+      Serial.println(gps_longitude);
+      break;
+    }
+    case 1U:
+    {
+      Serial.print(".");
+      break;
+    }
+    case 2U:
+    {
+      Serial.println("Received GPS position was invalid");
+      break;
+    }
+    default:
+    {
+      //Do nothing
+    }
   }
 
   (void)checkTimeUpdate();
