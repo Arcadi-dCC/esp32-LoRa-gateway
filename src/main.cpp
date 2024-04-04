@@ -39,8 +39,8 @@ void setup() {
   }
 
   //Add tags
-  //sensor.addTag("test", "GPS_5seconds");
-  //sensor.addTag("try", "20240404_1");
+  sensor.addTag("test", "GPS_5seconds");
+  sensor.addTag("try", "20240404_3");
 
   //Configure and log into e-mail account
   if (EmailConfig())
@@ -122,15 +122,15 @@ void loop(){
     in_packet_len = 0;
   }
 
-  (void)checkTimeUpdate();
+  (void)timeUpdateManager();
 
-  gps_return = checkPositionUpdate(&gps_latitude, &gps_longitude);
-  if(gps_return)
+  if(!positionUpdateManager(&gps_latitude, &gps_longitude))
   {
-    Serial.println(gps_return);
     Serial.print("New GPS position: ");
-    Serial.print(gps_latitude, 10);
+    Serial.print(gps_latitude, 5);
     Serial.print(" ");
-    Serial.println(gps_longitude, 10);
+    Serial.println(gps_longitude, 5);
+    (void)uploadValue("latitud", gps_latitude);
+    (void)uploadValue("longitud", gps_longitude);
   }
 }

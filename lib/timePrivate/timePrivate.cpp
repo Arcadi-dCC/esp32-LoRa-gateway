@@ -41,7 +41,7 @@ uint8 timeConfigWiFi(void)
 //Looks up the last calendar time that time was updated and compares with current calendar time.
 //If the difference is greater than TUPD_PERIOD, it calls timeConfigWiFi to update time.
 //Returns 0 if update was not necessary, 1 if time has been updated, 2 if error. 
-uint8 checkTimeUpdate(void)
+uint8 timeUpdateManager(void)
 {
     time_t now;
     time(&now);

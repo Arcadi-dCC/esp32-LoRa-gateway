@@ -34,7 +34,7 @@ uint8 InfluxServerConnect(void)
   return returner;
 }
 
-//Uploads a value to InfluxDB server with specified field. Returns: 0 if successful, 1 if error.
+//Uploads a uint8 value to InfluxDB server with specified field. Returns: 0 if successful, 1 if error.
 uint8 uploadValue(const String &field, uint8 value)
 {
   Serial.print("Trying to upload ");
@@ -45,6 +45,37 @@ uint8 uploadValue(const String &field, uint8 value)
 
   sensor.clearFields();
   sensor.addField(field, value);
+
+  uint32 start_time = millis();
+  while ((!client.writePoint(sensor)) and ((millis() - start_time) < INFLUXDB_UPL_TIMEOUT))
+  {
+    Serial.print(".");
+    delay(300);
+  }
+  Serial.println();
+  if ((millis() - start_time) >= INFLUXDB_UPL_TIMEOUT)
+  {
+    Serial.print("Timeout reached. InfluxDB write failed: ");
+    Serial.println(client.getLastErrorMessage());
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+//Uploads a float64 value to InfluxDB server with specified field. Returns: 0 if successful, 1 if error.
+uint8 uploadValue(const String &field, float64 value)
+{
+  Serial.print("Trying to upload ");
+  Serial.print(field);
+  Serial.print(" = ");
+  Serial.print(value, 5);
+  Serial.print(" ");
+
+  sensor.clearFields();
+  sensor.addField(field, value, 5);
 
   uint32 start_time = millis();
   while ((!client.writePoint(sensor)) and ((millis() - start_time) < INFLUXDB_UPL_TIMEOUT))
