@@ -4,6 +4,6 @@
 #include <platformTypes.h>
 
 uint8 gpsConfig(void);
-uint8 getGpsPosition(float64* latitude, float64* longitude);
+uint8 checkPositionUpdate(float64* latitude, float64* longitude);
 
 #endif //gpsPrivate_H

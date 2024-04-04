@@ -12,6 +12,8 @@
 uint16 new_value = 31;
 float64 gps_latitude, gps_longitude;
 
+uint8 gps_return;
+
 void setup() {
 
   Serial.begin(115200);
@@ -37,8 +39,8 @@ void setup() {
   }
 
   //Add tags
-  sensor.addTag("test", "LoRa_5minutes");
-  sensor.addTag("try", "20240321_2");
+  //sensor.addTag("test", "GPS_5seconds");
+  //sensor.addTag("try", "20240404_1");
 
   //Configure and log into e-mail account
   if (EmailConfig())
@@ -85,7 +87,7 @@ void loop(){
 
         Serial.print("Received value: ");
         Serial.println(new_value);
-        (void)uploadValue("new_value", new_value);
+        //(void)uploadValue("new_value", new_value);
       }
       break;
     }
@@ -120,26 +122,15 @@ void loop(){
     in_packet_len = 0;
   }
 
-  switch(getGpsPosition(&gps_latitude, &gps_longitude))
-  {
-    case 0U:
-    {
-      Serial.print("New GPS position: ");
-      Serial.print(gps_latitude);
-      Serial.print(" ");
-      Serial.println(gps_longitude);
-      break;
-    }
-    case 2U:
-    {
-      Serial.println("Received GPS position was invalid");
-      break;
-    }
-    default:
-    {
-      //Do nothing
-    }
-  }
-
   (void)checkTimeUpdate();
+
+  gps_return = checkPositionUpdate(&gps_latitude, &gps_longitude);
+  if(gps_return)
+  {
+    Serial.println(gps_return);
+    Serial.print("New GPS position: ");
+    Serial.print(gps_latitude, 10);
+    Serial.print(" ");
+    Serial.println(gps_longitude, 10);
+  }
 }
