@@ -130,7 +130,5 @@ void loop(){
     Serial.print(gps_latitude, 5);
     Serial.print(" ");
     Serial.println(gps_longitude, 5);
-    (void)uploadValue("latitud", gps_latitude);
-    (void)uploadValue("longitud", gps_longitude);
   }
 }
