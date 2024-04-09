@@ -5,6 +5,6 @@
 
 #define TOTAL_BINS 7U
 
-extern const float64 bins[TOTAL_BINS][4U];
+extern const float64 bins[TOTAL_BINS][5U];
 
 #endif //collectionCfg_H
