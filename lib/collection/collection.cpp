@@ -23,3 +23,33 @@ uint8 findBin(uint8 bin_id)
 
     return 0xFF;
 }
+
+//Stores the fullness of the specified bin.
+//Returns 0 if successful, 1 if bin id was not found in the database.
+uint8 saveBinFullness(uint8 bin_id, uint8 fullness)
+{
+    uint8 i = findBin(bin_id);
+    if(i == 0xFF)
+    {
+        return 1;
+    }
+
+    bins[i][4U] = (float64)fullness;
+    return 0;
+}
+
+//Looks up if the fullness value of a specified bin has been updated sincs last restart.
+bool isBinFullnessUpdated(uint8 bin_id)
+{
+    uint8 i = findBin(bin_id);
+    if(i == 0xFF)
+    {
+        return true;
+    }
+
+    if(bins[i][4U] == (float64)0xFF)
+    {
+        return false;
+    }
+    return true;
+}

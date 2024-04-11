@@ -8,8 +8,9 @@
 #include <mailClientPrivate.h>
 #include <timePrivate.h>
 #include <WiFiPrivate.h>
+#include <collectionCfg.h>
 
-uint16 new_value = 31;
+uint8 new_value = 0xFF;
 float64 gps_latitude, gps_longitude;
 
 uint8 gps_return;
@@ -71,22 +72,28 @@ void loop(){
       //Do nothing
     }break;
 
-    case (GATEWAY_ID_LEN + 4U):
+    case (GATEWAY_ID_LEN + 3U):
     {
       if(replyAck())
       {
         Serial.println("Failed to reply with acknowledgement");
       }
-      if(isDataDuplicated())
+      //if(isDataDuplicated())
+      //{
+      //  Serial.println("Received data was duplicated");
+      //}
+      if(isBinFullnessUpdated(in_packet[GATEWAY_ID_LEN]))
       {
-        Serial.println("Received data was duplicated");
+        Serial.println("Fullness of the sending bin was already updated.");
       }
       else
       {
-        new_value = *((uint16*)(&in_packet[GATEWAY_ID_LEN+2U]));
+        saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
 
-        Serial.print("Received value: ");
-        Serial.println(new_value);
+        Serial.print("Received fullness: ");
+        Serial.print(in_packet[GATEWAY_ID_LEN+2U]);
+        Serial.print(" from bin: ");
+        Serial.println(in_packet[GATEWAY_ID_LEN]);
         //(void)uploadValue("new_value", new_value);
       }
       break;
