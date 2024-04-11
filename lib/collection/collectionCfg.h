@@ -5,6 +5,8 @@
 
 #define TOTAL_BINS 7U
 
-extern const float64 bins[TOTAL_BINS][5U];
+uint8 findBin(uint8 bin_id);
+
+extern float64 bins[TOTAL_BINS][6U];
 
 #endif //collectionCfg_H

@@ -5,6 +5,7 @@
 
 #include <TinyGPSPlus.h>
 #include <SoftwareSerial.h>
+#include <collectionCfg.h>
 
 TinyGPSPlus gps;
 SoftwareSerial ss(RX_PIN, TX_PIN); //RxPin, TxPin
@@ -79,4 +80,23 @@ uint8 positionUpdateManager(float64* lat, float64* lng)
             return 2U;
         }
     }
+}
+
+//Looks for the position of the specified bin from the collection database and calculates the distance to it.
+//Returns: 0 if successful, 1 if gps location is not updated, 2 if bin_id was not found in the collection database
+uint8 distanceToBin(uint8 bin_id, float64* distance)
+{
+    if(!gps.location.isValid())
+    {
+        return 1U;
+    }
+
+    uint8 i = findBin(bin_id);
+    if(i == 0xFF)
+    {
+        return 2U;
+    }
+    
+    *distance = gps.distanceBetween(gps.location.lat(), gps.location.lng(), bins[i][2U], bins[i][3U]);
+    return 0;
 }
