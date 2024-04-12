@@ -10,7 +10,6 @@
 #include <WiFiPrivate.h>
 #include <collection.h>
 
-uint8 new_value = 0xFF;
 float64 gps_latitude, gps_longitude;
 
 uint8 gps_return;
