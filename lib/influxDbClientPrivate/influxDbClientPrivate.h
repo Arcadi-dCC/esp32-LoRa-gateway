@@ -6,7 +6,7 @@
 
 uint8 InfluxServerConnect(void);
 uint8 uploadValue(const String &field, uint8 value);
-uint8 uploadValue(const String &field, float64 value);
+uint8 uploadValue(const String &field, float64 value, uint8 decimal_places);
 
 extern Point sensor; // Data point (_measurement)
 

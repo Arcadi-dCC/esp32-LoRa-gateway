@@ -5,7 +5,7 @@
 
 #include <TinyGPSPlus.h>
 #include <SoftwareSerial.h>
-#include <collectionCfg.h>
+#include <collection.h>
 
 TinyGPSPlus gps;
 SoftwareSerial ss(RX_PIN, TX_PIN); //RxPin, TxPin

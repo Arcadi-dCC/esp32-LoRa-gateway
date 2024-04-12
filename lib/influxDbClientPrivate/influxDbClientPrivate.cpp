@@ -66,16 +66,16 @@ uint8 uploadValue(const String &field, uint8 value)
 }
 
 //Uploads a float64 value to InfluxDB server with specified field. Returns: 0 if successful, 1 if error.
-uint8 uploadValue(const String &field, float64 value)
+uint8 uploadValue(const String &field, float64 value, uint8 decimal_places = 2U)
 {
   Serial.print("Trying to upload ");
   Serial.print(field);
   Serial.print(" = ");
-  Serial.print(value, 5);
+  Serial.print(value, decimal_places);
   Serial.print(" ");
 
   sensor.clearFields();
-  sensor.addField(field, value, 5);
+  sensor.addField(field, value, decimal_places);
 
   uint32 start_time = millis();
   while ((!client.writePoint(sensor)) and ((millis() - start_time) < INFLUXDB_UPL_TIMEOUT))

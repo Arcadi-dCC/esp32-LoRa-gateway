@@ -8,7 +8,7 @@
 #include <mailClientPrivate.h>
 #include <timePrivate.h>
 #include <WiFiPrivate.h>
-#include <collectionCfg.h>
+#include <collection.h>
 
 uint8 new_value = 0xFF;
 float64 gps_latitude, gps_longitude;

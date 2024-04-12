@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include <collectionCfg.h>
+#include <collection.h>
 
 //Looks for the file containing info of the specified bin, by looking for a matching bin ID.
 //Returns the file with the desired bin info, or 0xFF if the given bin_id was not found in the database.
