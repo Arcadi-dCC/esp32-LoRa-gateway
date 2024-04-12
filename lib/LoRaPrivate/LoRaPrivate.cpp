@@ -13,7 +13,7 @@ volatile bool Cad_isr_responded = false;
 volatile bool channel_busy = true;
 volatile bool ack_received = false;
 
-RTC_DATA_ATTR uint8 previous_did = 0xFF;
+uint8 previous_did = 0xFF;
 
 //Encapsules the whole LoRa configuration. Returns 0 if successful, 1 if error.
 uint8 LoRaConfig(void)

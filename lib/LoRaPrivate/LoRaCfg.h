@@ -6,7 +6,7 @@
 #define MISO        19
 #define MOSI        27
 #define SS          18
-#define RST         14
+#define RST         23
 #define DIO0        26
 
 #define FREQ        868E6           //Signal frequency

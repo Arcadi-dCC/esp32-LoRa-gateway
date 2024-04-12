@@ -2,13 +2,17 @@
 #include <platformTypes.h>
 
 #include <customUtilities.h>
+#include <gpsPrivate.h>
 #include <influxDbClientPrivate.h>
 #include <LoRaPrivate.h>
 #include <mailClientPrivate.h>
 #include <timePrivate.h>
 #include <WiFiPrivate.h>
+#include <collection.h>
 
-uint16 new_value = 31;
+float64 gps_latitude, gps_longitude;
+
+uint8 gps_return;
 
 void setup() {
 
@@ -35,11 +39,17 @@ void setup() {
   }
 
   //Add tags
-  sensor.addTag("test", "LoRa_5minutes");
-  sensor.addTag("try", "20240321_2");
+  sensor.addTag("test", "GPS_5seconds");
+  sensor.addTag("try", "20240404_3");
 
   //Configure and log into e-mail account
   if (EmailConfig())
+  {
+    SwReset(10);
+  }
+
+  //Configure connection with GPS module
+  if(gpsConfig())
   {
     SwReset(10);
   }
@@ -61,23 +71,29 @@ void loop(){
       //Do nothing
     }break;
 
-    case (GATEWAY_ID_LEN + 4U):
+    case (GATEWAY_ID_LEN + 3U):
     {
       if(replyAck())
       {
         Serial.println("Failed to reply with acknowledgement");
       }
-      if(isDataDuplicated())
+      //if(isDataDuplicated())
+      //{
+      //  Serial.println("Received data was duplicated");
+      //}
+      if(isBinFullnessUpdated(in_packet[GATEWAY_ID_LEN]))
       {
-        Serial.println("Received data was duplicated");
+        Serial.println("Fullness of the sending bin was already updated.");
       }
       else
       {
-        new_value = *((uint16*)(&in_packet[GATEWAY_ID_LEN+2U]));
+        saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
 
-        Serial.print("Received value: ");
-        Serial.println(new_value);
-        (void)uploadValue("new_value", new_value);
+        Serial.print("Received fullness: ");
+        Serial.print(in_packet[GATEWAY_ID_LEN+2U]);
+        Serial.print(" from bin: ");
+        Serial.println(in_packet[GATEWAY_ID_LEN]);
+        //(void)uploadValue("new_value", new_value);
       }
       break;
     }
@@ -112,5 +128,13 @@ void loop(){
     in_packet_len = 0;
   }
 
-  (void)checkTimeUpdate();
+  (void)timeUpdateManager();
+
+  if(!positionUpdateManager(&gps_latitude, &gps_longitude))
+  {
+    Serial.print("New GPS position: ");
+    Serial.print(gps_latitude, 5);
+    Serial.print(" ");
+    Serial.println(gps_longitude, 5);
+  }
 }
