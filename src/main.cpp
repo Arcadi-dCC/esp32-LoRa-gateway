@@ -54,6 +54,11 @@ void setup() {
     SwReset(10);
   }
 
+  if(collectionConfig())
+  {
+    SwReset(10);
+  }
+
   if (LoRaConfig())
   {
     SwReset(10);
@@ -129,6 +134,8 @@ void loop(){
   }
 
   (void)timeUpdateManager();
+
+  (void)collectedClusterManager();
 
   if(!positionUpdateManager(&gps_latitude, &gps_longitude))
   {

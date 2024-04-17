@@ -3,9 +3,19 @@
 #include <collection.h>
 
 uint8 current_cluster, previous_cluster;
+uint8 cluster_collected_flag = 0U;
+
+//Configures collection done button as input, and configures the interrupt on such button.
+//Always returns 0 (sucessful).
+uint8 collectionConfig(void)
+{
+    pinMode(COL_DONE_BTN, INPUT);
+    attachInterrupt(COL_DONE_BTN, onClusterCollected, RISING);
+    return 0;
+}
 
 //Looks for the file containing info of the specified bin, by looking for a matching bin ID.
-//Returns the a pointer the desired bin info, or NULL if the given bin_id was not found in the database.
+//Returns a pointer to the desired bin info, or NULL if the given bin_id was not found in the database.
 float64* findBin(uint8 bin_id)
 {
     uint8 i = 0U;
@@ -135,59 +145,107 @@ uint8* fullBinsInCluster(uint8 cluster, uint16* number_of_bins)
     return NULL;
 }
 
-bool isClusterUpdated(uint8 cluster)
-{
-    float64* cluster_info = findCluster(cluster);
-    uint8 i = 0U;
-    while(cluster_info[])
-}
-
 //Sorts out the state of the cluster.
-//returns 0 if the state of any bin in the cluster is not known, 1 if there is no full bin, 2 if there are full bins
+//returns 0 if the state of any bin in the cluster is not known, 1 if there is no full bin, 2 if there are full bins, 3 if cluster does not exist
 uint8 clusterState(uint8 cluster_id)
 {
-    if(!isClusterUpdated)
+    uint8 i = 0U;
+    do
     {
-        return 0U;
-    }
-    uint16 full_bins = 0U;
-    uint8* full_bin_list = fullBinsInCluster(cluster_id, &full_bins);
+        if(bins[i][1U] == (float64)cluster_id)
+        {
+            break;
+        }
+        i++;
+    } while (i < TOTAL_BINS);
 
-    uint8 returner = 1U;
-    if(full_bin_list != NULL)
+    if(i >= TOTAL_BINS)
     {
-        returner++;
+        return 3U;
     }
-    delete[] full_bin_list;
-    return returner;
+
+    while((i < TOTAL_BINS) and (bins[i][1U] == (float64)cluster_id))
+    {
+        if(bins[i][4U] == (float64)0xFF)
+        {
+            return 0U;
+        }
+        if(bins[i][4U] >= MIN_FULLNESS)
+        {
+            return 2U;
+        }
+        i++;
+    }
+
+    return 1U;
 }
 
-void clusterWasCollected(void)
+void IRAM_ATTR onClusterCollected(void)
 {
+    cluster_collected_flag = 1U;
+}
+
+//Returns 0 if successful, 1 if no cluster has been collected, 3 if error
+uint8 collectedClusterManager(void)
+{
+    if(!cluster_collected_flag)
+    {
+        return 1U;
+    }
+
+    cluster_collected_flag = 0U;
     while(1)
     {
         previous_cluster = current_cluster;
-        (void)nextCluster(&current_cluster, previous_cluster);
-        switch (clusterState(current_cluster))
+
+        switch(nextCluster(&current_cluster, previous_cluster))
         {
-        case (0U): /*Some bins in cluster are not yet updated*/
-        {
-            //PrintScr("Follow the route");
-            break;
-        }
-        case (1U): /*No full bins in cluster*/
-        {
-            continue;
-        }
-        case (2U): /*Some full bins in cluster*/
-        {
-            break;
-        }
-        default:
-        {
-            /*Do nothing*/
-            break;
-        }
+            case(0U):
+            {
+                switch(clusterState(current_cluster))
+                {
+                    case(0U): //Unknown state
+                    {
+                        Serial.print("Follow the route.\n");
+                        return 1U;
+                    }
+                    case(1U): //No full bins
+                    {
+                        continue;
+                    }
+                    case(2U): //Some full bins
+                    {
+                        uint16 full_bins = 0U;
+                        uint8* full_bins_list = fullBinsInCluster(current_cluster, &full_bins);
+
+                        uint16 i = 0U;
+                        Serial.print("Collect these bins next: ");
+                        for(i = 0U; i < full_bins; i++)
+                        {
+                            Serial.print(full_bins_list[i]);
+                            Serial.print(" ");
+                        }
+                        Serial.println();
+                        delete[] full_bins_list;
+                        return 0U;
+                    }
+                    default:
+                    {
+                        /*Do nothing*/
+                        break;
+                    }
+                }
+                break;
+            }
+            case(2U): //This was the last cluster
+            {
+                Serial.print("All full bins have been collected.\n");
+                return 2U;
+            }
+            default: //Error
+            {
+                return 3U;
+            }
         }
     }
 }
