@@ -2,7 +2,7 @@
 
 #include <collection.h>
 
-uint8 current_cluster, previous_cluster;
+uint8 previous_cluster, current_cluster = (uint8)bins[0U][1U];
 uint8 cluster_collected_flag = 0U;
 
 //Configures collection done button as input, and configures the interrupt on such button.
@@ -11,6 +11,7 @@ uint8 collectionConfig(void)
 {
     pinMode(COL_DONE_BTN, INPUT);
     attachInterrupt(COL_DONE_BTN, onClusterCollected, RISING);
+    Serial.println("Follow the route.");
     return 0;
 }
 
@@ -164,17 +165,23 @@ uint8 clusterState(uint8 cluster_id)
         return 3U;
     }
 
+    uint16 full_bins = 0U;
+
     while((i < TOTAL_BINS) and (bins[i][1U] == (float64)cluster_id))
     {
         if(bins[i][4U] == (float64)0xFF)
         {
             return 0U;
         }
-        if(bins[i][4U] >= MIN_FULLNESS)
+        else if(bins[i][4U] >= MIN_FULLNESS)
         {
-            return 2U;
+            full_bins++;
         }
         i++;
+    }
+    if(full_bins)
+    {
+        return 2U;
     }
 
     return 1U;
@@ -185,12 +192,13 @@ void IRAM_ATTR onClusterCollected(void)
     cluster_collected_flag = 1U;
 }
 
-//Returns 0 if successful, 1 if no cluster has been collected, 3 if error
+//Prints what bins the driver should collect next.
+//Returns 0 if successful, 1 if next cluster state is not updated, 2 if all bins are already collected, 3 if update was not necessary, 4 if error
 uint8 collectedClusterManager(void)
 {
     if(!cluster_collected_flag)
     {
-        return 1U;
+        return 3U;
     }
 
     cluster_collected_flag = 0U;
@@ -244,8 +252,48 @@ uint8 collectedClusterManager(void)
             }
             default: //Error
             {
-                return 3U;
+                return 4U;
             }
+        }
+    }
+}
+
+//Function called when current cluster is not updated, and a new reading is received.
+//It prints the bins that need to be collected in the next cluster, or calls collectedClusterManager if none needs collection.
+//Returns 0 if there are full bins in the cluster, 1 if not all bins are updated, 2 if bins are empty, 3 if error
+uint8 updateCurrentCluster(void)
+{
+    switch(clusterState(current_cluster))
+    {
+        case(0U): //Unknown state
+        {
+            return 1U;
+        }
+        case(1U): //No full bins
+        {
+            cluster_collected_flag = 1U;
+            return 2U;
+        }
+        case(2U): //Some full bins
+        {
+            uint16 full_bins = 0U;
+            uint8* full_bins_list = fullBinsInCluster(current_cluster, &full_bins);
+
+            uint16 i = 0U;
+            Serial.print("Collect these bins next: ");
+            for(i = 0U; i < full_bins; i++)
+            {
+                Serial.print(full_bins_list[i]);
+                Serial.print(" ");
+            }
+            Serial.println();
+            delete[] full_bins_list;
+            return 0U;
+        }
+        default:
+        {
+            return 3U;
+            break;
         }
     }
 }

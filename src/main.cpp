@@ -12,7 +12,7 @@
 
 float64 gps_latitude, gps_longitude;
 
-uint8 gps_return;
+uint8 gps_return, current_cluster_update_flag = 0U;
 
 void setup() {
 
@@ -58,6 +58,7 @@ void setup() {
   {
     SwReset(10);
   }
+  current_cluster_update_flag = 1U;
 
   if (LoRaConfig())
   {
@@ -99,6 +100,14 @@ void loop(){
         Serial.print(" from bin: ");
         Serial.println(in_packet[GATEWAY_ID_LEN]);
         //(void)uploadValue("new_value", new_value);
+
+        if(current_cluster_update_flag)
+        {
+          if(updateCurrentCluster() != 1U)
+          {
+            current_cluster_update_flag = 0U;
+          }
+        }
       }
       break;
     }
@@ -135,13 +144,16 @@ void loop(){
 
   (void)timeUpdateManager();
 
-  (void)collectedClusterManager();
-
+  if(collectedClusterManager() == 1U)
+  {
+    current_cluster_update_flag = 1U;
+  }
+/*
   if(!positionUpdateManager(&gps_latitude, &gps_longitude))
   {
     Serial.print("New GPS position: ");
     Serial.print(gps_latitude, 5);
     Serial.print(" ");
     Serial.println(gps_longitude, 5);
-  }
+  }*/
 }
