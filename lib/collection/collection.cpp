@@ -3,7 +3,8 @@
 #include <collection.h>
 
 uint8 previous_cluster, current_cluster = (uint8)bins[0U][1U];
-uint8 cluster_collected_flag = 0U, current_cluster_update_flag = 0U;
+volatile uint8 cluster_collected_flag = 0U;
+uint8 current_cluster_update_flag = 1U;
 
 //Configures collection done button as input, and configures the interrupt on such button.
 //Always returns 0 (sucessful).
@@ -296,4 +297,9 @@ uint8 updateCurrentCluster(void)
             break;
         }
     }
+}
+
+uint8 getCurrentCluster(void)
+{
+    return current_cluster;
 }

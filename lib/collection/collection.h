@@ -15,8 +15,9 @@ uint8 clusterState(uint8 cluster_id);
 uint8 collectedClusterManager(void);
 void IRAM_ATTR onClusterCollected(void);
 uint8 updateCurrentCluster(void);
+uint8 getCurrentCluster(void);
 
-extern uint8 cluster_collected_flag;
+extern volatile uint8 cluster_collected_flag;
 extern uint8 current_cluster_update_flag;
 
 #endif //collection_H
