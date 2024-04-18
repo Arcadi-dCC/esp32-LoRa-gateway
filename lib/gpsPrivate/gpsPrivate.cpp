@@ -76,7 +76,7 @@ uint8 positionUpdateManager(float64* lat, float64* lng)
         }
         else
         {
-            Serial.println("GPS position was not updated in the last seconds.");
+            Serial.print(".");
             return 2U;
         }
     }
@@ -91,12 +91,12 @@ uint8 distanceToBin(uint8 bin_id, float64* distance)
         return 1U;
     }
 
-    uint8 i = findBin(bin_id);
-    if(i == 0xFF)
+    float64* bin_info = findBin(bin_id);
+    if(bin_info == NULL)
     {
         return 2U;
     }
     
-    *distance = gps.distanceBetween(gps.location.lat(), gps.location.lng(), bins[i][2U], bins[i][3U]);
+    *distance = gps.distanceBetween(gps.location.lat(), gps.location.lng(), bin_info[2U], bin_info[3U]);
     return 0;
 }

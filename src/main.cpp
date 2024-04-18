@@ -54,6 +54,12 @@ void setup() {
     SwReset(10);
   }
 
+  if(collectionConfig())
+  {
+    SwReset(10);
+  }
+  current_cluster_update_flag = 1U;
+
   if (LoRaConfig())
   {
     SwReset(10);
@@ -94,6 +100,14 @@ void loop(){
         Serial.print(" from bin: ");
         Serial.println(in_packet[GATEWAY_ID_LEN]);
         //(void)uploadValue("new_value", new_value);
+
+        if(current_cluster_update_flag)
+        {
+          if(updateCurrentCluster() != 1U)
+          {
+            current_cluster_update_flag = 0U;
+          }
+        }
       }
       break;
     }
@@ -129,6 +143,11 @@ void loop(){
   }
 
   (void)timeUpdateManager();
+
+  if(collectedClusterManager() == 1U)
+  {
+    current_cluster_update_flag = 1U;
+  }
 
   if(!positionUpdateManager(&gps_latitude, &gps_longitude))
   {
