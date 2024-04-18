@@ -76,7 +76,7 @@ uint8 positionUpdateManager(float64* lat, float64* lng)
         }
         else
         {
-            Serial.println("GPS position was not updated in the last seconds.");
+            Serial.print(".");
             return 2U;
         }
     }

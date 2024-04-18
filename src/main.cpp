@@ -12,7 +12,7 @@
 
 float64 gps_latitude, gps_longitude;
 
-uint8 gps_return, current_cluster_update_flag = 0U;
+uint8 gps_return;
 
 void setup() {
 
@@ -148,12 +148,12 @@ void loop(){
   {
     current_cluster_update_flag = 1U;
   }
-/*
+
   if(!positionUpdateManager(&gps_latitude, &gps_longitude))
   {
     Serial.print("New GPS position: ");
     Serial.print(gps_latitude, 5);
     Serial.print(" ");
     Serial.println(gps_longitude, 5);
-  }*/
+  }
 }

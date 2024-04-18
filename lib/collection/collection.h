@@ -17,5 +17,6 @@ void IRAM_ATTR onClusterCollected(void);
 uint8 updateCurrentCluster(void);
 
 extern uint8 cluster_collected_flag;
+extern uint8 current_cluster_update_flag;
 
 #endif //collection_H
