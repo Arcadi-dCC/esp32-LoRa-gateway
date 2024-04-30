@@ -10,6 +10,8 @@
 #include <WiFiPrivate.h>
 #include <collection.h>
 
+#include <Wire.h>
+
 float64 gps_latitude, gps_longitude;
 
 uint8 gps_return;
