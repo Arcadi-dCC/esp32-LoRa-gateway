@@ -58,7 +58,6 @@ void setup() {
   {
     SwReset(10);
   }
-  current_cluster_update_flag = 1U;
 
   if (LoRaConfig())
   {
@@ -95,10 +94,7 @@ void loop(){
       {
         saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
 
-        Serial.print("Received fullness: ");
-        Serial.print(in_packet[GATEWAY_ID_LEN+2U]);
-        Serial.print(" from bin: ");
-        Serial.println(in_packet[GATEWAY_ID_LEN]);
+        Serial.printf("Bin %d is at %d%% of capacity.\n", in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
         //(void)uploadValue("new_value", new_value);
 
         if(current_cluster_update_flag)
@@ -151,9 +147,11 @@ void loop(){
 
   if(!positionUpdateManager(&gps_latitude, &gps_longitude))
   {
-    Serial.print("New GPS position: ");
-    Serial.print(gps_latitude, 5);
-    Serial.print(" ");
-    Serial.println(gps_longitude, 5);
+    float64 distance;
+    uint8 cluster = getCurrentCluster();
+    if(!distanceToCluster(cluster, &distance))
+    {
+      Serial.printf("Next cluster %d is %.0f m away.\n", cluster, distance);
+    }
   }
 }

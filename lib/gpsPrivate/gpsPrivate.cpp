@@ -82,21 +82,30 @@ uint8 positionUpdateManager(float64* lat, float64* lng)
     }
 }
 
-//Looks for the position of the specified bin from the collection database and calculates the distance to it.
-//Returns: 0 if successful, 1 if gps location is not updated, 2 if bin_id was not found in the collection database
-uint8 distanceToBin(uint8 bin_id, float64* distance)
+//Looks for the position of the specified cluster from the collection database and calculates the distance in meters to it.
+//Returns: 0 if successful, 1 if gps location is not updated, 2 if cluster_id was not found in the collection database
+uint8 distanceToCluster(uint8 cluster_id, float64* distance)
 {
     if(!gps.location.isValid())
     {
         return 1U;
     }
 
-    float64* bin_info = findBin(bin_id);
-    if(bin_info == NULL)
+    uint8 i = 0U;
+    do
+    {
+        if(bins[i][1U] == (float64)cluster_id)
+        {
+            break;
+        }
+        i++;
+    } while (i < TOTAL_BINS);
+
+    if(i >= TOTAL_BINS)
     {
         return 2U;
     }
     
-    *distance = gps.distanceBetween(gps.location.lat(), gps.location.lng(), bin_info[2U], bin_info[3U]);
+    *distance = gps.distanceBetween(gps.location.lat(), gps.location.lng(), bins[i][2U], bins[i][3U]);
     return 0;
 }
