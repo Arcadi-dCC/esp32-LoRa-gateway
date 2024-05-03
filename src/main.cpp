@@ -9,8 +9,7 @@
 #include <timePrivate.h>
 #include <WiFiPrivate.h>
 #include <collection.h>
-
-#include <Wire.h>
+#include <display.h>
 
 float64 gps_latitude, gps_longitude;
 
@@ -21,6 +20,11 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
   Serial.println("LoRa Gateway");
+
+    if(displayConfig())
+  {
+    SwReset(10);
+  }
 
   //Connect to WiFi
   if (WiFiConnect())
@@ -146,6 +150,8 @@ void loop(){
   {
     current_cluster_update_flag = 1U;
   }
+
+  screenSequencer();
 
   if(!positionUpdateManager(&gps_latitude, &gps_longitude))
   {

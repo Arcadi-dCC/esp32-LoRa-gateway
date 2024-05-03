@@ -2,6 +2,8 @@
 
 #include <collection.h>
 
+#include <display.h>
+
 uint8 previous_cluster, current_cluster = (uint8)bins[0U][1U];
 volatile uint8 cluster_collected_flag = 0U;
 uint8 current_cluster_update_flag = 1U;
@@ -216,6 +218,7 @@ uint8 collectedClusterManager(void)
                     case(0U): //Unknown state
                     {
                         Serial.print("Follow the route.\n");
+                        screen = 2U;
                         return 1U;
                     }
                     case(1U): //No full bins
@@ -228,7 +231,8 @@ uint8 collectedClusterManager(void)
                         uint8* full_bins_list = fullBinsInCluster(current_cluster, &full_bins);
 
                         uint16 i = 0U;
-                        Serial.print("Collect these bins next: ");
+                        Serial.print("Collect bins: ");
+                        screen = 1U;
                         for(i = 0U; i < full_bins; i++)
                         {
                             Serial.print(full_bins_list[i]);
@@ -249,6 +253,7 @@ uint8 collectedClusterManager(void)
             case(2U): //This was the last cluster
             {
                 Serial.print("All full bins have been collected.\n");
+                screen = 3U;
                 return 2U;
             }
             default: //Error
@@ -281,6 +286,7 @@ uint8 updateCurrentCluster(void)
             uint8* full_bins_list = fullBinsInCluster(current_cluster, &full_bins);
 
             uint16 i = 0U;
+            screen = 1U;
             Serial.print("Collect these bins next: ");
             for(i = 0U; i < full_bins; i++)
             {
