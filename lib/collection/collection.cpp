@@ -15,6 +15,7 @@ uint8 collectionConfig(void)
     pinMode(COL_DONE_BTN, INPUT);
     attachInterrupt(COL_DONE_BTN, onClusterCollected, RISING);
     Serial.println("Follow the route.");
+    screen = 2U;
     return 0;
 }
 

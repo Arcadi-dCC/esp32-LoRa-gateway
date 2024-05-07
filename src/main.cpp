@@ -147,8 +147,6 @@ void loop(){
     current_cluster_update_flag = 1U;
   }
 
-  screenSequencer();
-
   if(!positionUpdateManager(&gps_latitude, &gps_longitude))
   {
     float64 distance;
@@ -158,4 +156,6 @@ void loop(){
       Serial.printf("Next cluster %d is %.0f m away.\n", cluster, distance);
     }
   }
+
+  screenSequencer();
 }
