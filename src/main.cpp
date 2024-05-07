@@ -21,7 +21,7 @@ void setup() {
   while (!Serial);
   Serial.println("LoRa Gateway");
 
-    if(displayConfig())
+  if(displayConfig())
   {
     SwReset(10);
   }
@@ -101,14 +101,10 @@ void loop(){
         saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
 
         Serial.printf("Bin %d is at %d%% of capacity.\n", in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
-        //(void)uploadValue("new_value", new_value);
 
         if(current_cluster_update_flag)
         {
-          if(updateCurrentCluster() != 1U)
-          {
-            current_cluster_update_flag = 0U;
-          }
+          clusterUpdateManager();
         }
       }
       break;
