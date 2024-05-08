@@ -78,6 +78,10 @@ void showScreen()
             delete[] full_bins_list;
             break;
         }
+        case (3U):
+        {
+            display.printf(MSG_3_COMP);
+        }
         default:
         {
             break;
