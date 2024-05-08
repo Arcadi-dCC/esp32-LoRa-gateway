@@ -7,6 +7,7 @@
 uint8 previous_cluster, current_cluster = (uint8)bins[0U][1U];
 volatile uint8 cluster_collected_flag = 0U;
 uint8 current_cluster_update_flag = 1U;
+volatile uint32 last_pressed = 0U; //For debouncing COL_DONE_BTN
 
 //Configures collection done button as input, and configures the interrupt on such button.
 //Always returns 0 (sucessful).
@@ -193,7 +194,11 @@ uint8 clusterState(uint8 cluster_id)
 
 void IRAM_ATTR onClusterCollected(void)
 {
-    cluster_collected_flag = 1U;
+    if(millis() - last_pressed > CDB_DEBOUNCING)
+    {
+        last_pressed = millis();
+        cluster_collected_flag = 1U;
+    }
 }
 
 //Prints what bins the driver should collect next.
