@@ -9,5 +9,6 @@ extern float64 bins[TOTAL_BINS][6U];
 #define MIN_FULLNESS    50U //%
 
 #define COL_DONE_BTN    38 //IO pin in ESP32 board
+#define CDB_DEBOUNCING 1000U //ms
 
 #endif //collectionCfg_H

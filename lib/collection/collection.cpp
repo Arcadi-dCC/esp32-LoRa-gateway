@@ -2,9 +2,12 @@
 
 #include <collection.h>
 
+#include <display.h>
+
 uint8 previous_cluster, current_cluster = (uint8)bins[0U][1U];
 volatile uint8 cluster_collected_flag = 0U;
 uint8 current_cluster_update_flag = 1U;
+volatile uint32 last_pressed = 0U; //For debouncing COL_DONE_BTN
 
 //Configures collection done button as input, and configures the interrupt on such button.
 //Always returns 0 (sucessful).
@@ -13,6 +16,7 @@ uint8 collectionConfig(void)
     pinMode(COL_DONE_BTN, INPUT);
     attachInterrupt(COL_DONE_BTN, onClusterCollected, RISING);
     Serial.println("Follow the route.");
+    screen = 2U;
     return 0;
 }
 
@@ -147,8 +151,15 @@ uint8* fullBinsInCluster(uint8 cluster, uint16* number_of_bins)
     return NULL;
 }
 
-//Sorts out the state of the cluster.
-//returns 0 if the state of any bin in the cluster is not known, 1 if there is no full bin, 2 if there are full bins, 3 if cluster does not exist
+/*
+Sorts out the state of the cluster.
+Returns:
+0 if the state of the cluster is not fully updated and there are no full bins detected
+1 if the state of the cluster is fully updated and all bins are empty
+2 if the state of the cluster is fully updated and there are full bins
+3 if cluster does not exist
+4 if the state of the cluster is not fully updated but some full bins are already detected
+*/
 uint8 clusterState(uint8 cluster_id)
 {
     uint8 i = 0U;
@@ -167,12 +178,13 @@ uint8 clusterState(uint8 cluster_id)
     }
 
     uint16 full_bins = 0U;
+    uint16 unknown_state_bins = 0U;
 
     while((i < TOTAL_BINS) and (bins[i][1U] == (float64)cluster_id))
     {
         if(bins[i][4U] == (float64)0xFF)
         {
-            return 0U;
+            unknown_state_bins++;
         }
         else if(bins[i][4U] >= MIN_FULLNESS)
         {
@@ -180,17 +192,38 @@ uint8 clusterState(uint8 cluster_id)
         }
         i++;
     }
-    if(full_bins)
+    if(unknown_state_bins)
     {
-        return 2U;
-    }
+        if(full_bins)
+        {
+            return 4U;
 
-    return 1U;
+        }
+        else
+        {
+            return 0U;
+        }
+    }
+    else
+    {
+        if(full_bins)
+        {
+            return 2U;
+        }
+        else
+        {
+            return 1U;
+        }
+    }
 }
 
 void IRAM_ATTR onClusterCollected(void)
 {
-    cluster_collected_flag = 1U;
+    if(millis() - last_pressed > CDB_DEBOUNCING)
+    {
+        last_pressed = millis();
+        cluster_collected_flag = 1U;
+    }
 }
 
 //Prints what bins the driver should collect next.
@@ -213,30 +246,29 @@ uint8 collectedClusterManager(void)
             {
                 switch(clusterState(current_cluster))
                 {
-                    case(0U): //Unknown state
+                    case(0U): //Not fully updated, no full bins detected
                     {
                         Serial.print("Follow the route.\n");
+                        screen = 2U;
                         return 1U;
                     }
-                    case(1U): //No full bins
+                    case(1U): //Fully updated. No full bins
                     {
                         continue;
                     }
-                    case(2U): //Some full bins
+                    case(2U): //Fully updated. Some full bins
                     {
-                        uint16 full_bins = 0U;
-                        uint8* full_bins_list = fullBinsInCluster(current_cluster, &full_bins);
-
-                        uint16 i = 0U;
-                        Serial.print("Collect these bins next: ");
-                        for(i = 0U; i < full_bins; i++)
-                        {
-                            Serial.print(full_bins_list[i]);
-                            Serial.print(" ");
-                        }
+                        printFullBins();
                         Serial.println();
-                        delete[] full_bins_list;
+                        screen = 0U;
                         return 0U;
+                    }
+                    case(4U): //Not fully updated, some full bins detected
+                    {
+                        printFullBins();
+                        Serial.println();
+                        screen = 0U;
+                        return 1U;
                     }
                     default:
                     {
@@ -249,6 +281,7 @@ uint8 collectedClusterManager(void)
             case(2U): //This was the last cluster
             {
                 Serial.print("All full bins have been collected.\n");
+                screen = 3U;
                 return 2U;
             }
             default: //Error
@@ -259,42 +292,38 @@ uint8 collectedClusterManager(void)
     }
 }
 
-//Function called when current cluster is not updated, and a new reading is received.
-//It prints the bins that need to be collected in the next cluster, or calls collectedClusterManager if none needs collection.
-//Returns 0 if there are full bins in the cluster, 1 if not all bins are updated, 2 if bins are empty, 3 if error
-uint8 updateCurrentCluster(void)
+//Checks if the current cluster is fully updated. If so, it lowers the flag to keep updating, and depending on the case:
+//if there are full bins: it triggers collection message
+//if all bins are empty: it raises the cluster_collected flag to call collectedClusterManager()
+void clusterUpdateManager(void)
 {
     switch(clusterState(current_cluster))
     {
-        case(0U): //Unknown state
+        case(0U): //Not fully updated, no full bins detected
         {
-            return 1U;
+          break;
         }
-        case(1U): //No full bins
+        case (4U): //Not fully updated, some full bins detected
         {
-            cluster_collected_flag = 1U;
-            return 2U;
-        }
-        case(2U): //Some full bins
-        {
-            uint16 full_bins = 0U;
-            uint8* full_bins_list = fullBinsInCluster(current_cluster, &full_bins);
-
-            uint16 i = 0U;
-            Serial.print("Collect these bins next: ");
-            for(i = 0U; i < full_bins; i++)
-            {
-                Serial.print(full_bins_list[i]);
-                Serial.print(" ");
-            }
+            printFullBins();
             Serial.println();
-            delete[] full_bins_list;
-            return 0U;
-        }
-        default:
-        {
-            return 3U;
+            screen = 0U;
             break;
+        }
+        case(1U): //Fully updated. No full bins
+        {
+          cluster_collected_flag = 1U;
+        }
+        case(2U): //Fully updated. Some full bins
+        {
+          printFullBins();
+          Serial.println();
+          screen = 0U;
+        }
+        default: //cluster is updated
+        {
+          current_cluster_update_flag = 0U;
+          break;
         }
     }
 }
@@ -302,4 +331,20 @@ uint8 updateCurrentCluster(void)
 uint8 getCurrentCluster(void)
 {
     return current_cluster;
+}
+
+//Prints the id's of the full bins in the current cluster
+void printFullBins(void)
+{
+    uint16 full_bins = 0U;
+    uint8* full_bins_list = fullBinsInCluster(current_cluster, &full_bins);
+
+    uint16 i = 0U;
+    Serial.print("Collect bins: ");
+    for(i = 0U; i < full_bins; i++)
+    {
+        Serial.print(full_bins_list[i]);
+        Serial.print(" ");
+    }
+    delete[] full_bins_list;
 }

@@ -9,6 +9,7 @@
 #include <timePrivate.h>
 #include <WiFiPrivate.h>
 #include <collection.h>
+#include <display.h>
 
 float64 gps_latitude, gps_longitude;
 
@@ -19,6 +20,11 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
   Serial.println("LoRa Gateway");
+
+  if(displayConfig())
+  {
+    SwReset(10);
+  }
 
   //Connect to WiFi
   if (WiFiConnect())
@@ -95,14 +101,10 @@ void loop(){
         saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
 
         Serial.printf("Bin %d is at %d%% of capacity.\n", in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
-        //(void)uploadValue("new_value", new_value);
 
         if(current_cluster_update_flag)
         {
-          if(updateCurrentCluster() != 1U)
-          {
-            current_cluster_update_flag = 0U;
-          }
+          clusterUpdateManager();
         }
       }
       break;
@@ -154,4 +156,6 @@ void loop(){
       Serial.printf("Next cluster %d is %.0f m away.\n", cluster, distance);
     }
   }
+
+  screenSequencer();
 }
