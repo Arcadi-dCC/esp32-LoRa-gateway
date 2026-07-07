@@ -1,8 +1,8 @@
 #ifndef WiFiCfg_H
 #define WiFiCfg_H
 
-#define WIFI_SSID       "LAB243_exp"
-#define WIFI_PASSWORD   "123456789"
+#define WIFI_SSID       "FTE-D0A8"
+#define WIFI_PASSWORD   "X4yxZruz"
 
 #define WIFI_TIMEOUT    30000U          //WiFi connection timeout (ms)
 

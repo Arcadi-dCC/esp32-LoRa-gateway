@@ -1,12 +1,12 @@
 #ifndef influxDbClientCfg_H
 #define influxDbClientCfg_H
 
-#define INFLUXDB_URL        "http://10.20.255.254:8086/"
-#define INFLUXDB_TOKEN      "RjBjj-Q5BDBV5ndi3_GNqEwc2EX8KDcErqzsBHk_Rf5t5QMVX1FFiYOcPsMGJYrZZsQw-W8fywxJR7Pb5A7JTw=="
-#define INFLUXDB_ORG        "1d5669401414b39c"
-#define INFLUXDB_BUCKET     "esp32_tests"
+#define INFLUXDB_URL        "http://192.168.1.254:8086/"
+#define INFLUXDB_TOKEN      "1Dgu28vOIGs54s4ZDGrzXxNhDxG9PzB-x11YNHKa2cd7VFe06cYBv92ZG9bZOqM__sbJ3ngO9lo4G7yXElxQXw=="
+#define INFLUXDB_ORG        "fb0b71fa22c2cd78"
+#define INFLUXDB_BUCKET     "truck0"
 
-#define _MEASUREMENT        "GPS"
+#define _MEASUREMENT        "fullness"
 
 #define INFLUXDB_CON_TIMEOUT    60000U      //InfluxDB connection to server timeout (ms)
 #define INFLUXDB_UPL_TIMEOUT    10000U      //Data upload to InfluxDB server timeout (ms)
