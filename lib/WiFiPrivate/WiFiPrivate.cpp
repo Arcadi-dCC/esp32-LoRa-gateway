@@ -3,7 +3,6 @@
 #include <WiFiPrivate.h>
 #include <WiFiCfg.h>
 
-#include <WiFiMulti.h>
 WiFiMulti wifiMulti;
 
 //Tries to connect to WiFi. Returns: 0 if connection successful, 1 if 30 s timeout reached.
