@@ -3,10 +3,6 @@
 
 #include <platformTypes.h>
 
-#include <WiFiMulti.h>
-
 uint8 WiFiConnect(void);
-
-extern WiFiMulti wiFiMulti;
 
 #endif // WiFiPrivate_H

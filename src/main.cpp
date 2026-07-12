@@ -3,7 +3,10 @@
 
 #include <customUtilities.h>
 #include <gpsPrivate.h>
+
 #include <influxDbClientPrivate.h>
+#include <mqttPrivate.h>
+
 #include <LoRaPrivate.h>
 #include <mailClientPrivate.h>
 #include <timePrivate.h>
@@ -20,11 +23,11 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
   Serial.println("LoRa Gateway");
-
+/*
   if(displayConfig())
   {
     SwReset(10);
-  }
+  }*/
 
   //Connect to WiFi
   if (WiFiConnect())
@@ -37,16 +40,22 @@ void setup() {
   {
     SwReset(10);
   }
-  
+
+  //Connect to MQTT server
+  if(mqttConnect())
+  {
+    SwReset(10);
+  }
+  /*
   //Connect to InfluxDB server
   if (InfluxServerConnect())
   {
     SwReset(10);
-  }
+  }*/
 
   //Add tags
-  sensor.addTag("test", "GPS_5seconds");
-  sensor.addTag("try", "20240404_3");
+  //sensor.addTag("test", "GPS_5seconds");
+  //sensor.addTag("try", "20240404_3");
 
   //Configure and log into e-mail account
   if (EmailConfig())
@@ -55,10 +64,10 @@ void setup() {
   }
 
   //Configure connection with GPS module
-  if(gpsConfig())
-  {
-    SwReset(10);
-  }
+  //if(gpsConfig())
+  //{
+  //  SwReset(10);
+  //}
 
   if(collectionConfig())
   {
@@ -71,10 +80,13 @@ void setup() {
   }
   delay(1000);
   Serial.println("Listening");
+
+  (void)mqttPublish(0);
+
 }
 
 void loop(){
-
+/*
   switch(in_packet_len)
   {
     case 0U:
@@ -158,4 +170,6 @@ void loop(){
   }
 
   screenSequencer();
+*/
+  mqttKeepCon();
 }

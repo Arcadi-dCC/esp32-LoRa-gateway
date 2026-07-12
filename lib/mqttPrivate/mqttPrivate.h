@@ -3,5 +3,6 @@
 
 uint8 mqttConnect(void);
 uint8 mqttPublish(uint8 bin_id);
+void mqttKeepCon(void);
 
 #endif // mqttPrivate_H

@@ -5,11 +5,12 @@
 #include <mqttPrivate.h>
 
 #include <PubSubClient.h>
-#include <WiFi.h>
-#include <WiFiPrivate.h>
+#include <WiFiClient.h>
 #include <collection.h>
 
-PubSubClient client(MQTT_SERVER, MQTT_PORT, wiFiMulti);
+WiFiClient espClient;
+PubSubClient client(MQTT_SERVER, MQTT_PORT, espClient);
+
 uint32 last_reconnect_attempt = 0;
 
 //Tries to connect to MQTT server. Returns: 0 if connection successful, 1 if MQTT_TIMEOUT reached.
@@ -61,12 +62,12 @@ uint8 mqttPublish(uint8 bin_id)
         float64* bin_data = findBin(bin_id);
         if( bin_data == NULL)
         {
-            Serial.println("MQTT data retrieve: bad bin ID.");
+            Serial.println("MQTT data retrieve err: bad bin ID.");
             return 3;
         }
         if(bin_data[4] == 0xFF)
         {
-            Serial.println("MQTT data retrieve: bin fullness not updated.");
+            Serial.println("MQTT data retrieve err: bin fullness not updated.");
             return 4;
         }
 
@@ -83,4 +84,10 @@ uint8 mqttPublish(uint8 bin_id)
         }
     }
     else return 2;
+
+    return 0;
 }
+
+//Makes is easier to keep the connection with the MQTT server up.
+//Calls client.loop() without having to include PubSubClient library elsewhere.
+void mqttKeepCon(void) {client.loop();}
