@@ -3,8 +3,6 @@
 
 #include <customUtilities.h>
 #include <gpsPrivate.h>
-
-#include <influxDbClientPrivate.h>
 #include <mqttPrivate.h>
 
 #include <LoRaPrivate.h>
@@ -23,11 +21,11 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
   Serial.println("LoRa Gateway");
-/*
+
   if(displayConfig())
   {
     SwReset(10);
-  }*/
+  }
 
   //Connect to WiFi
   if (WiFiConnect())
@@ -46,16 +44,6 @@ void setup() {
   {
     SwReset(10);
   }
-  /*
-  //Connect to InfluxDB server
-  if (InfluxServerConnect())
-  {
-    SwReset(10);
-  }*/
-
-  //Add tags
-  //sensor.addTag("test", "GPS_5seconds");
-  //sensor.addTag("try", "20240404_3");
 
   //Configure and log into e-mail account
   if (EmailConfig())
@@ -64,10 +52,10 @@ void setup() {
   }
 
   //Configure connection with GPS module
-  //if(gpsConfig())
-  //{
-  //  SwReset(10);
-  //}
+  if(gpsConfig())
+  {
+    SwReset(10);
+  }
 
   if(collectionConfig())
   {
@@ -81,12 +69,10 @@ void setup() {
   delay(1000);
   Serial.println("Listening");
 
-  (void)mqttPublish(0);
-
 }
 
 void loop(){
-/*
+
   switch(in_packet_len)
   {
     case 0U:
@@ -111,6 +97,7 @@ void loop(){
       else
       {
         saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
+        mqttPublish(in_packet[GATEWAY_ID_LEN]);
 
         Serial.printf("Bin %d is at %d%% of capacity.\n", in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
 
@@ -168,8 +155,7 @@ void loop(){
       Serial.printf("Next cluster %d is %.0f m away.\n", cluster, distance);
     }
   }
-
+  
   screenSequencer();
-*/
   mqttKeepCon();
 }
