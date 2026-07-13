@@ -97,7 +97,7 @@ void loop(){
       else
       {
         saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
-        mqttPublish(in_packet[GATEWAY_ID_LEN]); //TODO - if publishing fails, it is never attempted again
+        mqttAppendBin(in_packet[GATEWAY_ID_LEN]);
 
         Serial.printf("Bin %d is at %d%% of capacity.\n", in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
 
@@ -157,5 +157,6 @@ void loop(){
   }
   
   //screenSequencer();
-  mqttKeepCon();
+  mqttPublishMgr();
+
 }

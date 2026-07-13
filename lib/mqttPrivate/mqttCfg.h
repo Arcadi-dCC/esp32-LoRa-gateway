@@ -11,5 +11,6 @@
 
 #define MQTT_TIMEOUT    30000U          //Connection to MQTT server timeout (ms)
 #define MQTT_COOLDOWN   1000U           //Cooldown between MQTT server reconnection attempts (ms)
+#define MQTT_BUF        20U             //Length of FIFO buffer of bins of which to send data. Program uses one less than specified.
 
 #endif // mqttCfg_H
