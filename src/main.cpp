@@ -86,17 +86,13 @@ void loop(){
       {
         Serial.println("Failed to reply with acknowledgement");
       }
-      //if(isDataDuplicated())
-      //{
-      //  Serial.println("Received data was duplicated");
-      //}
-      if(isBinFullnessUpdated(in_packet[GATEWAY_ID_LEN]))
+      if(isBinFullnessDuped(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+1U]))
       {
         Serial.println("Fullness of the sending bin was already updated.");
       }
       else
       {
-        saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
+        saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+1U], in_packet[GATEWAY_ID_LEN+2U]);
         mqttAppendBin(in_packet[GATEWAY_ID_LEN]);
 
         Serial.printf("Bin %d is at %d%% of capacity.\n", in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
