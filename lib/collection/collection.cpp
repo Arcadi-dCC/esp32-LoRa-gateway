@@ -37,9 +37,9 @@ float64* findBin(uint8 bin_id)
     return NULL;
 }
 
-//Stores the fullness of the specified bin.
+//Stores the fullness of the specified bin and the data ID it was received with.
 //Returns 0 if successful, 1 if bin id was not found in the database.
-uint8 saveBinFullness(uint8 bin_id, uint8 fullness)
+uint8 saveBinFullness(uint8 bin_id, uint8 data_id, uint8 fullness)
 {
     float64* bin_info = findBin(bin_id);
     if(bin_info == NULL)
@@ -48,23 +48,21 @@ uint8 saveBinFullness(uint8 bin_id, uint8 fullness)
     }
 
     bin_info[4U] = (float64)fullness;
+    bin_info[5U] = (float64)data_id;
     return 0U;
 }
 
-//Looks up if the fullness value of a specified bin has been updated since last restart.
-bool isBinFullnessUpdated(uint8 bin_id)
+//Checks in collectionCfg.cpp table if the data ID of the newly received packet is different from the last one for the specified bin.
+//If this is the case, the fullness value is new. Otherwise it's duplicated and should be dismissed.
+//Returns 0 if data is new, 1 if it is duplicated, 2 if specified bin does not exist.
+uint8 isBinFullnessDuped(uint8 bin_id, uint8 data_id)
 {
     float64* bin_info = findBin(bin_id);
-    if(bin_info == NULL)
-    {
-        return 1U;
-    }
+    if(bin_info == NULL) return 2U;
 
-    if(bin_info[4U] == (float64)0xFF)
-    {
-        return false;
-    }
-    return true;
+    if(bin_info[5U] == (float64)data_id) return 1U;
+    
+    return 0U;
 }
 
 //Looks for the next cluster and returns it through reference variable.

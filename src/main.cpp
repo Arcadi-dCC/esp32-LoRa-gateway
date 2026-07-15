@@ -3,7 +3,7 @@
 
 #include <customUtilities.h>
 #include <gpsPrivate.h>
-#include <influxDbClientPrivate.h>
+#include <mqttPrivate.h>
 #include <LoRaPrivate.h>
 #include <mailClientPrivate.h>
 #include <timePrivate.h>
@@ -37,16 +37,12 @@ void setup() {
   {
     SwReset(10);
   }
-  
-  //Connect to InfluxDB server
-  if (InfluxServerConnect())
+
+  //Connect to MQTT server
+  if(mqttConnect())
   {
     SwReset(10);
   }
-
-  //Add tags
-  sensor.addTag("test", "GPS_5seconds");
-  sensor.addTag("try", "20240404_3");
 
   //Configure and log into e-mail account
   if (EmailConfig())
@@ -71,6 +67,7 @@ void setup() {
   }
   delay(1000);
   Serial.println("Listening");
+
 }
 
 void loop(){
@@ -88,17 +85,14 @@ void loop(){
       {
         Serial.println("Failed to reply with acknowledgement");
       }
-      //if(isDataDuplicated())
-      //{
-      //  Serial.println("Received data was duplicated");
-      //}
-      if(isBinFullnessUpdated(in_packet[GATEWAY_ID_LEN]))
+      if(isBinFullnessDuped(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+1U]))
       {
         Serial.println("Fullness of the sending bin was already updated.");
       }
       else
       {
-        saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
+        saveBinFullness(in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+1U], in_packet[GATEWAY_ID_LEN+2U]);
+        mqttAppendBin(in_packet[GATEWAY_ID_LEN]);
 
         Serial.printf("Bin %d is at %d%% of capacity.\n", in_packet[GATEWAY_ID_LEN], in_packet[GATEWAY_ID_LEN+2U]);
 
@@ -156,6 +150,8 @@ void loop(){
       Serial.printf("Next cluster %d is %.0f m away.\n", cluster, distance);
     }
   }
-
+  
   screenSequencer();
+  mqttPublishMgr();
+
 }

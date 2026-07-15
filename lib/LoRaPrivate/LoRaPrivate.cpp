@@ -13,8 +13,6 @@ volatile bool Cad_isr_responded = false;
 volatile bool channel_busy = true;
 volatile bool ack_received = false;
 
-uint8 previous_did = 0xFF;
-
 //Encapsules the whole LoRa configuration. Returns 0 if successful, 1 if error.
 uint8 LoRaConfig(void)
 {
@@ -110,21 +108,6 @@ uint8 replyAck(void)
 
   LoRa.receive(); //reenter receive mode
   return err_reg;
-}
-
-//Checks if the data ID of the newly received packet is different from the last one.
-//If this is the case, the data value is new.
-//Returns false if data is new, true if data is duplicated.
-bool isDataDuplicated(void)
-{
-  bool returner = true;
-  if(in_packet[GATEWAY_ID_LEN + 1U] != previous_did)
-  {
-    returner = false;
-    previous_did = in_packet[GATEWAY_ID_LEN + 1U];
-  }
-
-  return returner;
 }
 
 //Sends a message containing the gateway ID [0,1], the time message ID[2] and
