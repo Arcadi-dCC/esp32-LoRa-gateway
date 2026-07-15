@@ -4,7 +4,6 @@
 #include <customUtilities.h>
 #include <gpsPrivate.h>
 #include <mqttPrivate.h>
-
 #include <LoRaPrivate.h>
 #include <mailClientPrivate.h>
 #include <timePrivate.h>
@@ -22,10 +21,10 @@ void setup() {
   while (!Serial);
   Serial.println("LoRa Gateway");
 
-  /*if(displayConfig())
+  if(displayConfig())
   {
     SwReset(10);
-  }*/
+  }
 
   //Connect to WiFi
   if (WiFiConnect())
@@ -152,7 +151,7 @@ void loop(){
     }
   }
   
-  //screenSequencer();
+  screenSequencer();
   mqttPublishMgr();
 
 }
