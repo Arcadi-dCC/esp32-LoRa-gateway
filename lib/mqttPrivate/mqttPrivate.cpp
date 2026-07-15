@@ -124,7 +124,7 @@ uint8 mqttPublishMgr(void)
 
     //Prepare message string in InfluxDB format
     char msg[MQTT_MSG_LEN];
-    snprintf(msg, MQTT_MSG_LEN - 1, "bin%d,gateway=0x%x,cluster=%d fullness=%d", (uint8)bin_data[0], GATEWAY_ID, (uint8)bin_data[1], (uint8)bin_data[4]);
+    snprintf(msg, MQTT_MSG_LEN - 1, "bin%d,gateway=0x%X,cluster=%d fullness=%d", (uint8)bin_data[0], GATEWAY_ID, (uint8)bin_data[1], (uint8)bin_data[4]);
     /*TODO - Assign a real value to each truck via a Cfg.h file*/
         
     //Try to publish
